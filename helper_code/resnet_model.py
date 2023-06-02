@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class ResnetModel(nn.Module):
-    def __init__(self,group_size:int=3)
+    def __init__(self,group_size:int=3):
         super().__init__()
         self.group_size = group_size
 
