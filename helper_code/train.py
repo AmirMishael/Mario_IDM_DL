@@ -1,5 +1,5 @@
-from code.resnet_model import ResnetModel
-from code.mario_buttons_dataset import MarioButtonsDataset
+from helper_code.resnet_model import ResnetModel
+from helper_code.mario_buttons_dataset import MarioButtonsDataset
 import torch
 import torchvision
 import os
