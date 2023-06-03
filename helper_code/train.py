@@ -56,14 +56,14 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,sa
                 print(f"saving checkpoint at epoch:{epoch}, batch:{i}")
                 torch.save(model.state_dict(),f"{save_path}/checkpoints/checkpoint_{epoch}_{i}.pt")
     
-    loss_history.append(running_loss)
-    running_loss /= len(data_loader)
+        loss_history.append(running_loss)
+        running_loss /= len(data_loader)
 
-    val_accuracy = calculate_accuracy(model,val_loader,device)
-    if val_accuracy > max_val_accuracy:
-        max_val_accuracy = val_accuracy
-        torch.save(model.state_dict(),f"{save_path}/best_model.pt")
-    print(f"running loss : {running_loss} , epoch:{epoch}")
+        val_accuracy = calculate_accuracy(model,val_loader,device)
+        if val_accuracy > max_val_accuracy:
+            max_val_accuracy = val_accuracy
+            torch.save(model.state_dict(),f"{save_path}/best_model.pt")
+        print(f"running loss : {running_loss} , epoch:{epoch}")
 
 def main_train(models_dir = "./models",checkpoint_path=None):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
