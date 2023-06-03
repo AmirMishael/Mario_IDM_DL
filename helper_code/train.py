@@ -65,7 +65,7 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,sa
         torch.save(model.state_dict(),f"{save_path}/best_model.pt")
     print(f"running loss : {running_loss} , epoch:{epoch}")
 
-def main_train(checkpoint_path=None):
+def main_train(models_dir = "./models",checkpoint_path=None):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(device)
     torch.manual_seed(17)
@@ -108,8 +108,8 @@ def main_train(checkpoint_path=None):
           group=group,
           epochs=epochs,
           learning_rate=learning_rate,
-          save_path='./models',
+          save_path=models_dir,
           start_epoch=start_epoch,
           start_batch=start_batch)
-    torch.save(model.state_dict(),f"./models/model_{group}.pt")
+    torch.save(model.state_dict(),f"{models_dir}/model_final.pt")
     print("model saved")
