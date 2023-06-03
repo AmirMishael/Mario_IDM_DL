@@ -1,7 +1,3 @@
-# !mkdir "./download"
-# !wget "https://github.com/rafaelcp/smbdataset/raw/main/data-smb.7z" -O "./download/data-smb.7z"
-# !7za x "./download/data-smb.7z" -o./mario_dataset -y -mmt=8
-
 import torch
 import torchvision
 import os
@@ -34,7 +30,7 @@ class MarioEpisode(Dataset):
         self.file_names.sort(key=lambda dir : int(pathlib.PurePath(dir).name.split("_")[4][1:]))
         self.total_frames = len(self.file_names)
 
-        self.shape = Image.open(os.path.join(episode_dir,self.file_names[0])).convert("L").size
+        self.shape = (256,256)#Image.open(os.path.join(episode_dir,self.file_names[0])).convert("L").size
         
     
     def __len__(self):
@@ -51,11 +47,11 @@ class MarioEpisode(Dataset):
     #using medatata format: <user>_<sessid>_e<episode>_<world>-<level>_f<frame>_a<action>_<datetime>.<outcome>.png
     #action format is move to binary and from msb to lsb : up, down, left, right, A, B, start, select, e.g.: 20dec = 00010100bin = right + B (running to the right)
     def _extract_action(self, file_name):
-        print(pathlib.PurePath(file_name).name)
+        #print(pathlib.PurePath(file_name).name)
         action_number = pathlib.PurePath(file_name).name.split("_")[5][1:]
         action_tensor = torch.zeros(8)
         action_bin = str(bin(int(action_number)))[2:].zfill(8) #remove 0b in start
-        print(action_bin)
+        #print(action_bin)
         for i in range(8):
             action_tensor[i] = int(action_bin[i])
         return action_tensor
@@ -79,7 +75,10 @@ class MarioButtonsDataset(Dataset):
     def __len__(self):
         return self.total_length
     def __getitem__(self, idx):
+        current_length = 0
         for episode in self.episodes:
-            if idx < len(episode):
+            current_length += len(episode)
+            #print(f"current:{current_length}, tot:{self.total_length},episode:{episode.total_frames}")
+            if idx < current_length:
                 return episode[idx % len(episode)]
-        raise IndexError("Index out of range")
+        raise IndexError(f"Index out of range. index:{idx} ,tot:{self.total_length}")

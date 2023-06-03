@@ -16,4 +16,5 @@ class ResnetModel(nn.Module):
         pass
     def forward(self,x):
         return self.resnet(x)
-        
+
+
