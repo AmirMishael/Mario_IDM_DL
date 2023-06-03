@@ -50,7 +50,7 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,sa
             optimizer.step()
 
             los_val = loss.data.item()
-            runnin_loss += los_val
+            running_loss += los_val
 
             if i % 200 == 0:
                 print(f"saving checkpoint at epoch:{epoch}, batch:{i}")
