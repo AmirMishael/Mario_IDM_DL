@@ -77,7 +77,7 @@ def main_train(models_dir = "./models",checkpoint_path=None):
 
     batch_size = 128
     learning_rate = 1e-3
-    epochs = 7
+    epochs = 100#7
     group = 3
 
     start_epoch = 0
@@ -97,7 +97,7 @@ def main_train(models_dir = "./models",checkpoint_path=None):
     test_loader = torch.utils.data.DataLoader(test_data,batch_size=batch_size,shuffle=True)
     val_loader = torch.utils.data.DataLoader(val_data,batch_size=batch_size,shuffle=True)
 
-    model = ResnetModel(group_size=group).to(device)
+    model = ResnetModel(group_size=group,use_pretrained=True).to(device)
     if checkpoint_path:
         model.load_state_dict(torch.load(checkpoint_path))
         start_epoch = int(pathlib.PurePath(checkpoint_path).name.split('_')[1])
