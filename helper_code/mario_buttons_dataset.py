@@ -9,7 +9,7 @@ import pathlib
 
 class MarioEpisode(Dataset):
     #format of folder <user>_<sessid>_e<episode>_<world>-<level>_<outcome>
-    def __init__(self,episode_dir,group_frames:int=1,transform = None):
+    def __init__(self,episode_dir,group_frames:int=1,transform = None,preload = False):
         super().__init__()
         self.episode_dir = episode_dir
         self.group_frames = group_frames
@@ -30,18 +30,34 @@ class MarioEpisode(Dataset):
         self.file_names.sort(key=lambda dir : int(pathlib.PurePath(dir).name.split("_")[4][1:]))
         self.total_frames = len(self.file_names)
 
+        self.preloaded_images = None
+
         self.shape = (256,256)#Image.open(os.path.join(episode_dir,self.file_names[0])).convert("L").size
+        if preload:
+            self.preloaded_images = []
+            for file in tqdm(self.file_names,desc=f"preloading {episode_dir}"):
+                current_img = Image.open(os.path.join(self.episode_dir,file)).convert("L")
+                if self.transform:
+                    current_img = self.transform(current_img)
+                self.preloaded_images.append(current_img)
+
         
     
     def __len__(self):
         return self.total_frames - self.group_frames + 1
-    
-    def __getitem__(self, idx) :
-        item = torch.zeros((self.group_frames,self.shape[1],self.shape[0]))
-        for i in range(self.group_frames):
-            current_img = Image.open(os.path.join(self.episode_dir,self.file_names[idx+i])).convert("L")
+    def _get_image(self,idx):
+        if self.preloaded_images is not None:
+            return self.preloaded_images[idx]
+        else:
+            current_img = Image.open(os.path.join(self.episode_dir,self.file_names[idx])).convert("L")
             if self.transform:
                 current_img = self.transform(current_img)
+            return current_img
+    def __getitem__(self, idx) :
+        item = torch.zeros((self.group_frames,self.shape[1],self.shape[0]))
+
+        for i in range(self.group_frames):
+            current_img = self._get_image(idx+i)
             item[i] = current_img
         return item, self._extract_action(self.file_names[idx+int(self.group_frames/2)]) #action from mid frame
     #using medatata format: <user>_<sessid>_e<episode>_<world>-<level>_f<frame>_a<action>_<datetime>.<outcome>.png
@@ -59,7 +75,7 @@ class MarioEpisode(Dataset):
                    
         
 class MarioButtonsDataset(Dataset):
-    def __init__(self,img_dir,group_frames:int = 1, transform = None):
+    def __init__(self,img_dir,group_frames:int = 1, transform = None,preload = False):
         super().__init__()
         self.group_frames = group_frames
         self.img_dir = img_dir
@@ -67,7 +83,7 @@ class MarioButtonsDataset(Dataset):
         
         self.total_length = 0
         for file in os.listdir(img_dir):
-            mario_episode = MarioEpisode(os.path.join(img_dir,file),group_frames,transform)
+            mario_episode = MarioEpisode(os.path.join(img_dir,file),group_frames,transform,preload)
             self.episodes.append(mario_episode)
             self.total_length += len(mario_episode)
         print(f"total episodes:{len(self.episodes)}")

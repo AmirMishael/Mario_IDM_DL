@@ -14,7 +14,7 @@ def calculate_accuracy(model, dataloader, device):
     total_inputs = 0
     #confusion_matrix = np.zeros([10,10], int)
     with torch.no_grad():
-        for data in tqdm(dataloader):
+        for data in tqdm(dataloader,desc="calculating accuracy"):
             inputs, buttons = data
             inputs = inputs.to(device)
             buttons = buttons.to(device)
@@ -35,7 +35,7 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,sa
     max_val_accuracy = 0
 
     #optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    optimizer = torch.optim.Adam(model.fc.parameters(), lr=learning_rate)
+    optimizer = torch.optim.Adam(model.resnet.fc.parameters(), lr=learning_rate)
     criterion = torch.nn.BCEWithLogitsLoss()
     
     for _ in range(start_batch):
@@ -44,7 +44,7 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,sa
     for epoch in range(start_epoch+1,epochs):
         model.train()
         running_loss = 0.0
-        for i,data in enumerate(tqdm(data_loader)):
+        for i,data in enumerate(tqdm(data_loader,desc=f"training epoch:{epoch}")):
             inputs,buttons = data
             inputs = inputs.to(device)
             buttons = buttons.to(device)
@@ -81,6 +81,8 @@ def main_train(models_dir = "./models",checkpoint_path=None):
     epochs = 100#7
     group = 3
 
+    preload=True
+
     start_epoch = 0
     start_batch = 0
 
@@ -90,7 +92,8 @@ def main_train(models_dir = "./models",checkpoint_path=None):
         #transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
     ])
     
-    mario_dataset = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,transform=transforms)
+    print(f"loading dataset preload:{preload}")
+    mario_dataset = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,transform=transforms,preload=preload)
     print(f"tot dataset frames :{len(mario_dataset)}")
     train_data,test_data,val_data = torch.utils.data.random_split(mario_dataset,[0.7,0.2,0.1])
 
