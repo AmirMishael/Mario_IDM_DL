@@ -8,21 +8,25 @@ from PIL import Image
 from tqdm import tqdm
 
 def calculate_accuracy(model, dataloader, device):
+    print("calculating accuracy")
     model.eval() # put in evaluation mode,  turn of DropOut, BatchNorm uses learned statistics
     total_correct = 0
     total_inputs = 0
     #confusion_matrix = np.zeros([10,10], int)
     with torch.no_grad():
-        for data in dataloader:
+        for data in tqdm(dataloader):
             inputs, buttons = data
             inputs = inputs.to(device)
             buttons = buttons.to(device)
             outputs = model(inputs)
             predicted = torch.round(torch.sigmoid(outputs))
             
+            #print(f"size of predicted: {buttons.size()}")
+            total_inputs += buttons.size(0) * buttons.size(1)
             total_correct += (predicted == buttons).sum().item()
 
     model_accuracy = total_correct / total_inputs
+    print(f"accuracy: {model_accuracy}")
     return model_accuracy 
 
 def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,save_path='./models',aug_list=[],start_epoch=0,start_batch=0):
@@ -53,7 +57,7 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,sa
             running_loss += los_val
 
             if i % 200 == 0:
-                print(f"saving checkpoint at epoch:{epoch}, batch:{i}")
+                print(f"saving checkpoint at epoch:{epoch}, batch:{i}, loss:{los_val}")
                 torch.save(model.state_dict(),f"{save_path}/checkpoints/checkpoint_{epoch}_{i}.pt")
     
         loss_history.append(running_loss)
@@ -72,7 +76,7 @@ def main_train(models_dir = "./models",checkpoint_path=None):
 
 
     batch_size = 128
-    learning_rate = 1e-4
+    learning_rate = 1e-3
     epochs = 7
     group = 3
 
