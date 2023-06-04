@@ -54,7 +54,9 @@ class MarioEpisode(Dataset):
         else:
             current_img = Image.open(os.path.join(self.episode_dir,self.file_names[idx]))
             if not self.use_color:
-                    current_img = current_img.convert("L")
+                current_img = current_img.convert("L")
+            else:
+                current_img = current_img.convert("RGB")
             if self.transform:
                 current_img = self.transform(current_img)
             return current_img
