@@ -90,7 +90,8 @@ def main_train(models_dir = "./models",checkpoint_path=None):
 
     transforms = torchvision.transforms.Compose([
         torchvision.transforms.Resize((256,256)),
-        torchvision.transforms.ToTensor()
+        torchvision.transforms.ToTensor(),
+        
         #transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
     ])
     
