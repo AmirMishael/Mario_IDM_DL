@@ -80,8 +80,8 @@ def main_train(models_dir = "./models",checkpoint_path=None):
     learning_rate = 1e-3
     epochs = 7
     
-    group = 3
-    use_color = True
+    group = 15#3
+    use_color = False
 
     preload=False
 

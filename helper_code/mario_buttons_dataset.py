@@ -40,6 +40,8 @@ class MarioEpisode(Dataset):
                 current_img = Image.open(os.path.join(self.episode_dir,file))
                 if not self.use_color:
                     current_img = current_img.convert("L")
+                else:
+                    current_img = current_img.convert("RGB")
                 if self.transform:
                     current_img = self.transform(current_img)
                 self.preloaded_images.append(current_img)
@@ -60,6 +62,7 @@ class MarioEpisode(Dataset):
             if self.transform:
                 current_img = self.transform(current_img)
             return current_img
+    
     def __getitem__(self, idx) :
         if not self.use_color:
             item = torch.zeros((self.group_frames,self.shape[1],self.shape[0]))
@@ -68,12 +71,14 @@ class MarioEpisode(Dataset):
 
         for i in range(self.group_frames):
             current_img = self._get_image(idx+i)
+            #print(f"shape:{current_img.shape},shape single:{current_img[0].shape}")
             if not self.use_color:
                 item[i] = current_img
             else:
-                item[i*3] = current_img[0]
-                item[i*3+1] = current_img[1]
-                item[i*3+2] = current_img[2]
+                item[3*i] =  current_img[0]
+                item[3*i+1] =  current_img[1]
+                item[3*i+2] =  current_img[2]
+                
             
         return item, self._extract_action(self.file_names[idx+int(self.group_frames/2)]) #action from mid frame
     #using medatata format: <user>_<sessid>_e<episode>_<world>-<level>_f<frame>_a<action>_<datetime>.<outcome>.png

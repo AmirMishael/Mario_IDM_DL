@@ -20,6 +20,7 @@ class ResnetModel(nn.Module):
         #     self.init_weights()
         
         self.resnet.conv1 = nn.Conv2d(in_channels=input_channels,out_channels=64,kernel_size=7,stride=2,padding=3,bias=False)
+        #self.resnet.conv1 = nn.Conv3d(in_channels=1,out_channels=64,kernel_size=(group_size,7,7),stride=2,padding=(0,3,3),bias=False)
         self.resnet.fc = nn.Linear(in_features=512,out_features=8)
         self.init_weights()
 
