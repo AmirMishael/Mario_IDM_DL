@@ -34,7 +34,8 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,sa
     loss_history=[]
     max_val_accuracy = 0
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    #optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.Adam(model.fc.parameters(), lr=learning_rate)
     criterion = torch.nn.BCEWithLogitsLoss()
     
     for _ in range(start_batch):
