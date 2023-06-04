@@ -57,7 +57,7 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,sa
             los_val = loss.data.item()
             running_loss += los_val
 
-            if i % 200 == 0:
+            if i % 500 == 0:
                 print(f"saving checkpoint at epoch:{epoch}, batch:{i}, loss:{los_val}")
                 torch.save(model.state_dict(),f"{save_path}/checkpoints/checkpoint_{epoch}_{i}.pt")
     
@@ -78,8 +78,10 @@ def main_train(models_dir = "./models",checkpoint_path=None):
 
     batch_size = 128
     learning_rate = 1e-3
-    epochs = 100#7
+    epochs = 7
+    
     group = 3
+    use_color = True
 
     preload=False
 
@@ -93,7 +95,7 @@ def main_train(models_dir = "./models",checkpoint_path=None):
     ])
     
     print(f"loading dataset preload:{preload}")
-    mario_dataset = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,transform=transforms,preload=preload)
+    mario_dataset = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,use_color=use_color,transform=transforms,preload=preload)
     print(f"tot dataset frames :{len(mario_dataset)}")
     train_data,test_data,val_data = torch.utils.data.random_split(mario_dataset,[0.7,0.2,0.1])
 
@@ -101,7 +103,7 @@ def main_train(models_dir = "./models",checkpoint_path=None):
     test_loader = torch.utils.data.DataLoader(test_data,batch_size=batch_size,shuffle=True)
     val_loader = torch.utils.data.DataLoader(val_data,batch_size=batch_size,shuffle=True)
 
-    model = ResnetModel(group_size=group,use_pretrained=True).to(device)
+    model = ResnetModel(group_size=group,use_color=use_color,use_pretrained=True).to(device)
     if checkpoint_path:
         model.load_state_dict(torch.load(checkpoint_path))
         start_epoch = int(pathlib.PurePath(checkpoint_path).name.split('_')[1])
