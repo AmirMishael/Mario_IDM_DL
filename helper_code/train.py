@@ -52,7 +52,7 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,sa
             output = model(inputs)
             loss = criterion(output,buttons)
             optimizer.zero_grad()
-            optimizer.backward()
+            loss.backward()
             optimizer.step()
 
             los_val = loss.data.item()
