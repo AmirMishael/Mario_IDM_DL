@@ -104,6 +104,8 @@ class MarioButtonsDataset(Dataset):
         
         self.total_length = 0
         for file in os.listdir(img_dir):
+            if not os.path.isdir(os.path.join(img_dir,file)):
+                continue
             mario_episode = MarioEpisode(os.path.join(img_dir,file),group_frames,use_color,transform,preload)
             self.episodes.append(mario_episode)
             self.total_length += len(mario_episode)
