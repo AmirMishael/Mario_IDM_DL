@@ -52,6 +52,7 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,sa
             output = model(inputs)
             loss = criterion(output,buttons)
             optimizer.zero_grad()
+            optimizer.backward()
             optimizer.step()
 
             los_val = loss.data.item()
@@ -100,9 +101,9 @@ def main_train(models_dir = "./models",checkpoint_path=None):
     print(f"tot dataset frames :{len(mario_dataset)}")
     train_data,test_data,val_data = torch.utils.data.random_split(mario_dataset,[0.7,0.2,0.1])
 
-    train_loader = torch.utils.data.DataLoader(train_data,batch_size=batch_size,shuffle=True,num_workers=8)
-    test_loader = torch.utils.data.DataLoader(test_data,batch_size=batch_size,shuffle=True,num_workers=8)
-    val_loader = torch.utils.data.DataLoader(val_data,batch_size=batch_size,shuffle=True,num_workers=8)
+    train_loader = torch.utils.data.DataLoader(train_data,batch_size=batch_size,shuffle=True,num_workers=16)
+    test_loader = torch.utils.data.DataLoader(test_data,batch_size=batch_size,shuffle=True,num_workers=16)
+    val_loader = torch.utils.data.DataLoader(val_data,batch_size=batch_size,shuffle=True,num_workers=16)
 
     model = ResnetModel(group_size=group,use_color=use_color,use_pretrained=True).to(device)
     if checkpoint_path:
