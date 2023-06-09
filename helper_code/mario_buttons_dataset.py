@@ -9,6 +9,8 @@ import pathlib
 TRAIN_WORLDS = [5,6,8]
 TEST_WORLDS = [3,4,7]
 VAL_WORLDS = [1,2]
+
+
 class MarioEpisode(Dataset):
     #format of folder <user>_<sessid>_e<episode>_<world>-<level>_<outcome>
     def __init__(self,episode_dir,group_frames:int=1,use_color = False ,transform = None,preload = False):
@@ -82,7 +84,7 @@ class MarioEpisode(Dataset):
                 item[3*i+2] =  current_img[2]
                 
             
-        return item, self._extract_action(self.file_names[idx+int(self.group_frames/2)]) #action from mid frame
+        return item, self._extract_action(self.file_names[idx+int(self.group_frames/2)]),f"{self.world}-{self.level}" #action from mid frame
     #using medatata format: <user>_<sessid>_e<episode>_<world>-<level>_f<frame>_a<action>_<datetime>.<outcome>.png
     #action format is move to binary and from msb to lsb : up, down, left, right, A, B, start, select, e.g.: 20dec = 00010100bin = right + B (running to the right)
     def _extract_action(self, file_name):
@@ -98,19 +100,25 @@ class MarioEpisode(Dataset):
                    
         
 class MarioButtonsDataset(Dataset):
-    def __init__(self,img_dir,group_frames:int = 1,use_color=False, transform = None,worlds = TEST_WORLDS,preload = False):
+    def __init__(self,img_dir,group_frames:int = 1,use_color=False,worlds = TEST_WORLDS,preload = False):
         super().__init__()
         self.group_frames = group_frames
         self.img_dir = img_dir
         self.episodes = []
-        
+        self.transform = torchvision.transforms.Compose([
+            torchvision.transforms.Resize((256,256)),
+            torchvision.transforms.ToTensor(),
+            
+            #torchvision.transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
+        ])
         self.total_length = 0
+
         for file in os.listdir(img_dir):
             if not os.path.isdir(os.path.join(img_dir,file)):
                 continue
-            mario_episode = MarioEpisode(os.path.join(img_dir,file),group_frames,use_color,transform,preload=False)
+            mario_episode = MarioEpisode(os.path.join(img_dir,file),group_frames,use_color,self.transform,preload=False)
             if int(mario_episode.world) in worlds:
-                mario_episode = MarioEpisode(os.path.join(img_dir,file),group_frames,use_color,transform,preload=preload)
+                mario_episode = MarioEpisode(os.path.join(img_dir,file),group_frames,use_color,self.transform,preload=preload)
                 self.episodes.append(mario_episode)
                 self.total_length += len(mario_episode)
         print(f"total episodes:{len(self.episodes)}")

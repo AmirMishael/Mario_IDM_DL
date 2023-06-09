@@ -15,7 +15,7 @@ def calculate_accuracy(model, dataloader, device):
     #confusion_matrix = np.zeros([10,10], int)
     with torch.no_grad():
         for data in tqdm(dataloader,desc="calculating accuracy"):
-            inputs, buttons = data
+            inputs, buttons ,world_level = data
             inputs = inputs.to(device)
             buttons = buttons.to(device)
             outputs = model(inputs)
@@ -45,7 +45,7 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,sa
         model.train()
         running_loss = 0.0
         for i,data in enumerate(tqdm(data_loader,desc=f"training epoch:{epoch}")):
-            inputs,buttons = data
+            inputs,buttons,world_level = data
             inputs = inputs.to(device)
             buttons = buttons.to(device)
 
@@ -89,17 +89,11 @@ def main_train(models_dir = "./models",checkpoint_path=None):
     start_epoch = 0
     start_batch = 0
 
-    transforms = torchvision.transforms.Compose([
-        torchvision.transforms.Resize((256,256)),
-        torchvision.transforms.ToTensor(),
-        
-        #transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
-    ])
     
     print(f"loading dataset preload:{preload}")
-    mario_dataset_train = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,use_color=use_color,transform=transforms,worlds=TRAIN_WORLDS,preload=preload)
-    mario_dataset_test = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,use_color=use_color,transform=transforms,worlds=TEST_WORLDS,preload=preload)
-    mario_dataset_val = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,use_color=use_color,transform=transforms,worlds=VAL_WORLDS,preload=preload)
+    mario_dataset_train = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,use_color=use_color,worlds=TRAIN_WORLDS,preload=preload)
+    mario_dataset_test = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,use_color=use_color,worlds=TEST_WORLDS,preload=preload)
+    mario_dataset_val = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,use_color=use_color,worlds=VAL_WORLDS,preload=preload)
     print(f"tot train dataset frames :{len(mario_dataset_train)}")
 
     train_loader = torch.utils.data.DataLoader(mario_dataset_train,batch_size=batch_size,shuffle=True,num_workers=8)
