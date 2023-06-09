@@ -6,7 +6,9 @@ from PIL import Image
 from tqdm import tqdm
 import pathlib
 
-
+TRAIN_WORLDS = [5,6,8]
+TEST_WORLDS = [3,4,7]
+VAL_WORLDS = [1,2]
 class MarioEpisode(Dataset):
     #format of folder <user>_<sessid>_e<episode>_<world>-<level>_<outcome>
     def __init__(self,episode_dir,group_frames:int=1,use_color = False ,transform = None,preload = False):
@@ -86,17 +88,17 @@ class MarioEpisode(Dataset):
     def _extract_action(self, file_name):
         #print(pathlib.PurePath(file_name).name)
         action_number = pathlib.PurePath(file_name).name.split("_")[5][1:]
-        action_tensor = torch.zeros(8)
+        action_tensor = torch.zeros(4)
         action_bin = str(bin(int(action_number)))[2:].zfill(8) #remove 0b in start
         #print(action_bin)
-        for i in range(8):
-            action_tensor[i] = int(action_bin[i])
+        for i,action_index in enumerate([0,2,3,5]):
+            action_tensor[i] = int(action_bin[action_index])
         return action_tensor
             
                    
         
 class MarioButtonsDataset(Dataset):
-    def __init__(self,img_dir,group_frames:int = 1,use_color=False, transform = None,preload = False):
+    def __init__(self,img_dir,group_frames:int = 1,use_color=False, transform = None,worlds = TEST_WORLDS,preload = False):
         super().__init__()
         self.group_frames = group_frames
         self.img_dir = img_dir
@@ -106,9 +108,11 @@ class MarioButtonsDataset(Dataset):
         for file in os.listdir(img_dir):
             if not os.path.isdir(os.path.join(img_dir,file)):
                 continue
-            mario_episode = MarioEpisode(os.path.join(img_dir,file),group_frames,use_color,transform,preload)
-            self.episodes.append(mario_episode)
-            self.total_length += len(mario_episode)
+            mario_episode = MarioEpisode(os.path.join(img_dir,file),group_frames,use_color,transform,preload=False)
+            if int(mario_episode.world) in worlds:
+                mario_episode = MarioEpisode(os.path.join(img_dir,file),group_frames,use_color,transform,preload=preload)
+                self.episodes.append(mario_episode)
+                self.total_length += len(mario_episode)
         print(f"total episodes:{len(self.episodes)}")
            
     def __len__(self):

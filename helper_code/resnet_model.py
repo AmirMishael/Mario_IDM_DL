@@ -22,7 +22,7 @@ class ResnetModel(nn.Module):
         
         self.resnet.conv1 = nn.Conv2d(in_channels=input_channels,out_channels=64,kernel_size=7,stride=2,padding=3,bias=False)
         #conv1 = nn.Conv3d(in_channels=input_channels,out_channels=3,kernel_size=(group_size,3,3),stride=1,padding=(1,1,1),bias=True)
-        self.resnet.fc = nn.Linear(in_features=512,out_features=8)
+        self.resnet.fc = nn.Linear(in_features=512,out_features=4)
 
         # self.nn = nn.Sequential(
         #     conv1,

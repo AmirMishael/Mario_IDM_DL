@@ -1,6 +1,6 @@
 import pathlib
 from helper_code.resnet_model import ResnetModel
-from helper_code.mario_buttons_dataset import MarioButtonsDataset
+from helper_code.mario_buttons_dataset import TEST_WORLDS, TRAIN_WORLDS, VAL_WORLDS, MarioButtonsDataset
 import torch
 import torchvision
 import os
@@ -38,8 +38,8 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,sa
     #optimizer = torch.optim.Adam(model.resnet.fc.parameters(), lr=learning_rate)
     criterion = torch.nn.BCEWithLogitsLoss()
     
-    for _ in range(start_batch):
-        next(data_loader)
+    # for _ in range(start_batch):
+    #     next(data_loader)
 
     for epoch in range(start_epoch+1,epochs):
         model.train()
@@ -97,20 +97,20 @@ def main_train(models_dir = "./models",checkpoint_path=None):
     ])
     
     print(f"loading dataset preload:{preload}")
-    mario_dataset = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,use_color=use_color,transform=transforms,preload=preload)
-    print(f"tot dataset frames :{len(mario_dataset)}")
-    train_data,test_data,val_data = torch.utils.data.random_split(mario_dataset,[0.7,0.2,0.1])
+    mario_dataset_train = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,use_color=use_color,transform=transforms,worlds=TRAIN_WORLDS,preload=preload)
+    mario_dataset_test = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,use_color=use_color,transform=transforms,worlds=TEST_WORLDS,preload=preload)
+    mario_dataset_val = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,use_color=use_color,transform=transforms,worlds=VAL_WORLDS,preload=preload)
+    print(f"tot train dataset frames :{len(mario_dataset_train)}")
 
-    train_loader = torch.utils.data.DataLoader(train_data,batch_size=batch_size,shuffle=True,num_workers=16)
-    test_loader = torch.utils.data.DataLoader(test_data,batch_size=batch_size,shuffle=True,num_workers=16)
-    val_loader = torch.utils.data.DataLoader(val_data,batch_size=batch_size,shuffle=True,num_workers=16)
+    train_loader = torch.utils.data.DataLoader(mario_dataset_train,batch_size=batch_size,shuffle=True,num_workers=8)
+    test_loader = torch.utils.data.DataLoader(mario_dataset_test,batch_size=batch_size,shuffle=True,num_workers=8)
+    val_loader = torch.utils.data.DataLoader(mario_dataset_val,batch_size=batch_size,shuffle=True,num_workers=8)
 
     model = ResnetModel(group_size=group,use_color=use_color,use_pretrained=True).to(device)
     if checkpoint_path:
         model.load_state_dict(torch.load(checkpoint_path))
         start_epoch = int(pathlib.PurePath(checkpoint_path).name.split('_')[1])
         start_batch = int(pathlib.PurePath(checkpoint_path).name.split('_')[2].split('.')[0])
-    
     
     
     train_loop(model = model,
