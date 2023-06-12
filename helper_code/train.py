@@ -4,6 +4,7 @@ from helper_code.mario_buttons_dataset import TEST_WORLDS, TRAIN_WORLDS, VAL_WOR
 import torch
 import torchvision
 import os
+import kornia.augmentation as K
 from PIL import Image
 from tqdm import tqdm
 
@@ -29,7 +30,8 @@ def calculate_accuracy(model, dataloader, device):
     print(f"accuracy: {model_accuracy}")
     return model_accuracy 
 
-def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,save_path='./models',aug_list=[],start_epoch=0,start_batch=0):
+def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,use_color,save_path='./models'
+               ,aug_list=[],start_epoch=0,start_batch=0):
     print(f"started training with hyperparams: group:{group}, epochs:{epochs}, learning_rate:{learning_rate}")
     loss_history=[]
     max_val_accuracy = 0
@@ -48,7 +50,8 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,sa
             inputs,buttons,world_level = data
             inputs = inputs.to(device)
             buttons = buttons.to(device)
-
+            if aug_list:
+                inputs = aug_list[torch.randint(0,len(aug_list),(1,))](inputs)
             output = model(inputs)
             loss = criterion(output,buttons)
             optimizer.zero_grad()
@@ -60,7 +63,7 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,sa
 
             if i % 500 == 0:
                 print(f"saving checkpoint at epoch:{epoch}, batch:{i}, loss:{los_val}")
-                torch.save(model.state_dict(),f"{save_path}/checkpoints/checkpoint_{epoch}_{i}.pt")
+                torch.save(model.state_dict(),f"{save_path}/checkpoints/checkpoint_{epoch}_{i}_group_{group}_color_{use_color}.pt")
     
         loss_history.append(running_loss)
         running_loss /= len(data_loader)
@@ -68,10 +71,10 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,sa
         val_accuracy = calculate_accuracy(model,val_loader,device)
         if val_accuracy > max_val_accuracy:
             max_val_accuracy = val_accuracy
-            torch.save(model.state_dict(),f"{save_path}/best_model.pt")
+            torch.save(model.state_dict(),f"{save_path}/best_model_group_{group}_color_{use_color}.pt")
         print(f"running loss : {running_loss} , epoch:{epoch}")
 
-def main_train(models_dir = "./models",checkpoint_path=None):
+def main_train(models_dir = "./models",checkpoint_path=None,lr=1e-3,group=3,use_color=False,use_aug=False):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(device)
     torch.manual_seed(17)
@@ -81,10 +84,16 @@ def main_train(models_dir = "./models",checkpoint_path=None):
     learning_rate = 1e-3
     epochs = 7
     
-    group = 3#3
-    use_color = False
+    group = group
+    use_color = use_color
 
     preload=False
+    if use_aug:
+        aug_ls = [K.augmentation.RandomGaussianNoise(mean=0,std=0.05,p=0.1),
+                  K.augmentation.RandomInvert(p=0.2),
+                  K.augmentation.RandomBoxBlur(kernel_size=(3,3),p=0.1)]
+    else:
+        aug_ls = []
 
     start_epoch = 0
     start_batch = 0
@@ -96,9 +105,9 @@ def main_train(models_dir = "./models",checkpoint_path=None):
     mario_dataset_val = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,use_color=use_color,worlds=VAL_WORLDS,preload=preload)
     print(f"tot train dataset frames :{len(mario_dataset_train)}")
 
-    train_loader = torch.utils.data.DataLoader(mario_dataset_train,batch_size=batch_size,shuffle=True,num_workers=8)
-    test_loader = torch.utils.data.DataLoader(mario_dataset_test,batch_size=batch_size,shuffle=True,num_workers=8)
-    val_loader = torch.utils.data.DataLoader(mario_dataset_val,batch_size=batch_size,shuffle=True,num_workers=8)
+    train_loader = torch.utils.data.DataLoader(mario_dataset_train,batch_size=batch_size,shuffle=True,num_workers=4)
+    #test_loader = torch.utils.data.DataLoader(mario_dataset_test,batch_size=batch_size,shuffle=True,num_workers=8)
+    val_loader = torch.utils.data.DataLoader(mario_dataset_val,batch_size=batch_size,shuffle=True,num_workers=4)
 
     model = ResnetModel(group_size=group,use_color=use_color,use_pretrained=True).to(device)
     if checkpoint_path:
@@ -114,7 +123,9 @@ def main_train(models_dir = "./models",checkpoint_path=None):
           group=group,
           epochs=epochs,
           learning_rate=learning_rate,
+          use_color=use_color,
           save_path=models_dir,
+          aug_list=aug_ls,
           start_epoch=start_epoch,
           start_batch=start_batch)
     torch.save(model.state_dict(),f"{models_dir}/model_final.pt")
