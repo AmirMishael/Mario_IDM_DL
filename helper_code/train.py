@@ -89,9 +89,9 @@ def main_train(models_dir = "./models",checkpoint_path=None,lr=1e-3,group=3,use_
 
     preload=False
     if use_aug:
-        aug_ls = [K.augmentation.RandomGaussianNoise(mean=0,std=0.05,p=0.1),
-                  K.augmentation.RandomInvert(p=0.2),
-                  K.augmentation.RandomBoxBlur(kernel_size=(3,3),p=0.1)]
+        aug_ls = [K.RandomGaussianNoise(mean=0,std=0.05,p=0.1),
+                  K.RandomInvert(p=0.2),
+                  K.RandomBoxBlur(kernel_size=(3,3),p=0.1)]
     else:
         aug_ls = []
 
