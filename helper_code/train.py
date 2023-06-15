@@ -113,7 +113,7 @@ def main_train(models_dir = "./models",checkpoint_path=None,lr=1e-3,group=3,use_
     if checkpoint_path:
         model.load_state_dict(torch.load(checkpoint_path))
         start_epoch = int(pathlib.PurePath(checkpoint_path).name.split('_')[1])
-        start_batch = int(pathlib.PurePath(checkpoint_path).name.split('_')[2].split('.')[0])
+        #start_batch = int(pathlib.PurePath(checkpoint_path).name.split('_')[2].split('.')[0])
     
     
     train_loop(model = model,
