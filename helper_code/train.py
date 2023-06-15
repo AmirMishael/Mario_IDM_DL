@@ -31,18 +31,20 @@ def calculate_accuracy(model, dataloader, device):
     return model_accuracy 
 
 def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,use_color,save_path='./models'
-               ,aug_list=[],start_epoch=0,start_batch=0):
+               ,aug_list=[],start_epoch=0):
     print(f"started training with hyperparams: group:{group}, epochs:{epochs}, learning_rate:{learning_rate}")
     loss_history=[]
     max_val_accuracy = 0
 
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)
     #optimizer = torch.optim.Adam(model.resnet.fc.parameters(), lr=learning_rate)
     criterion = torch.nn.BCEWithLogitsLoss()
     
     # for _ in range(start_batch):
     #     next(data_loader)
-
+    for  i in range(start_epoch):
+        scheduler.step()
     for epoch in range(start_epoch+1,epochs):
         model.train()
         running_loss = 0.0
@@ -73,8 +75,9 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,us
             max_val_accuracy = val_accuracy
             torch.save(model.state_dict(),f"{save_path}/best_model_group_{group}_color_{use_color}.pt")
         print(f"running loss : {running_loss} , epoch:{epoch}")
+        scheduler.step()
 
-def main_train(models_dir = "./models",checkpoint_path=None,lr=1e-3,group=3,use_color=False,use_aug=False):
+def main_train(models_dir = "./models",checkpoint_path=None,start_epoch=0,lr=1e-3,group=3,use_color=False,use_aug=False):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(device)
     torch.manual_seed(17)
@@ -95,8 +98,6 @@ def main_train(models_dir = "./models",checkpoint_path=None,lr=1e-3,group=3,use_
     else:
         aug_ls = []
 
-    start_epoch = 0
-    start_batch = 0
 
     
     print(f"loading dataset preload:{preload}")
@@ -112,7 +113,6 @@ def main_train(models_dir = "./models",checkpoint_path=None,lr=1e-3,group=3,use_
     model = ResnetModel(group_size=group,use_color=use_color,use_pretrained=True).to(device)
     if checkpoint_path:
         model.load_state_dict(torch.load(checkpoint_path))
-        start_epoch = int(pathlib.PurePath(checkpoint_path).name.split('_')[1])
         #start_batch = int(pathlib.PurePath(checkpoint_path).name.split('_')[2].split('.')[0])
     
     
@@ -126,7 +126,6 @@ def main_train(models_dir = "./models",checkpoint_path=None,lr=1e-3,group=3,use_
           use_color=use_color,
           save_path=models_dir,
           aug_list=aug_ls,
-          start_epoch=start_epoch,
-          start_batch=start_batch)
+          start_epoch=start_epoch,)
     torch.save(model.state_dict(),f"{models_dir}/model_final.pt")
     print("model saved")
