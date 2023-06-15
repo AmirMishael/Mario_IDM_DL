@@ -84,7 +84,7 @@ def main_train(models_dir = "./models",checkpoint_path=None,start_epoch=0,lr=1e-
 
 
     batch_size = 128
-    learning_rate = 1e-3
+    learning_rate = 5e-3
     epochs = 7
     
     group = group
