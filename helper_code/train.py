@@ -32,7 +32,7 @@ def calculate_accuracy(model, dataloader, device):
 
 def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,use_color,save_path='./models'
                ,aug_list=[],start_epoch=0):
-    print(f"started training with hyperparams: group:{group}, epochs:{epochs}, learning_rate:{learning_rate}")
+    print(f"started training with hyperparams: group:{group}, epochs:{epochs}, learning_rate:{learning_rate} ,use_color:{use_color} ,aug_list:{len(aug_list)},start_epoch:{start_epoch}")
     loss_history=[]
     max_val_accuracy = 0
 
