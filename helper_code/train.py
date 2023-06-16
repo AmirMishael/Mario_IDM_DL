@@ -77,14 +77,14 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,us
         print(f"running loss : {running_loss} , epoch:{epoch}")
         scheduler.step()
 
-def main_train(models_dir = "./models",checkpoint_path=None,start_epoch=0,lr=1e-3,group=3,use_color=False,use_aug=False):
+def main_train(models_dir = "./models",checkpoint_path=None,start_epoch=0,lr=1e-3,group=7,use_color=False,use_aug=False):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(device)
     torch.manual_seed(17)
 
 
     batch_size = 128
-    learning_rate = 5e-3
+    learning_rate = lr
     epochs = 7
     
     group = group
@@ -92,9 +92,11 @@ def main_train(models_dir = "./models",checkpoint_path=None,start_epoch=0,lr=1e-
 
     preload=False
     if use_aug:
-        aug_ls = [K.RandomGaussianNoise(mean=0,std=0.05,p=0.1),
+        aug_ls = [K.RandomGaussianNoise(mean=0,std=0.05,p=0.2),
                   K.RandomInvert(p=0.2),
-                  K.RandomBoxBlur(kernel_size=(3,3),p=0.1)]
+                  K.RandomBoxBlur(kernel_size=(3,3),p=0.2),
+                  K.RandomErasing(p=0.2,scale=(0.02,0.05)),
+                  K.RandromRotation(degrees=5,p=0.2)]
     else:
         aug_ls = []
 

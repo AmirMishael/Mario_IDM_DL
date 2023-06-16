@@ -37,9 +37,13 @@ def hist_correct_world_level(model):
     print(f"world-level correct hist :{world_level_hist}")
     return world_level_hist
 
-def calc_accuracy(model):
-    mario_dataset_test = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=3,use_color=False,worlds=TEST_WORLDS,preload=False)
-    data_loader = torch.utils.data.DataLoader(mario_dataset_test,batch_size=128,shuffle=True,num_workers=8)
+def calc_accuracy(model,mode='test',group_frames=7,use_color=False):
+    if mode == 'test':
+        mario_dataset = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=3,use_color=False,worlds=TEST_WORLDS,preload=False)
+    else:
+        mario_dataset = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=3,use_color=False,worlds=VAL_WORLDS,preload=False)
+
+    data_loader = torch.utils.data.DataLoader(mario_dataset,batch_size=128,shuffle=True,num_workers=8)
     model.eval() # put in evaluation mode,  turn of DropOut, BatchNorm uses learned statistics
     calculate_accuracy(model,data_loader,device)
 
