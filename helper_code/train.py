@@ -75,7 +75,7 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,us
             max_val_accuracy = val_accuracy
             torch.save(model.state_dict(),f"{save_path}/best_model_group_{group}_color_{use_color}.pt")
         print(f"running loss : {running_loss} , epoch:{epoch}")
-        scheduler.step()
+        #scheduler.step()
 
 def main_train(models_dir = "./models",checkpoint_path=None,start_epoch=0,lr=1e-3,group=7,use_color=False,use_aug=False):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
