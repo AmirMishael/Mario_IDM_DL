@@ -19,6 +19,7 @@ batch_size = 128
 
 model = ResnetModel(group_size=group,use_color=use_color,use_pretrained=False).to(device)
 model.load_state_dict(torch.load(os.path.join(modles_path,model_name)))
+model = model.to(device)
 
 mario_dataset_train = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,use_color=use_color,worlds=TRAIN_WORLDS,preload=False)
 mario_dataset_val = MarioButtonsDataset(img_dir='./mario_dataset',group_frames=group,use_color=use_color,worlds=VAL_WORLDS,preload=False)
@@ -35,7 +36,7 @@ learner = BYOL(
     channels=group*3 if use_color else group,
     image_size = 256,
     hidden_layer = 'avgpool',
-    augment_fn=K.AugmentationSequential(K.RandomGaussianBlur(p=0.5),
+    augment_fn=K.AugmentationSequential(K.RandomGaussianBlur(p=0.5,sigma_limit=(0.1,2.0),kernel_size=(3,3)),
                                         K.RandromRotation(degrees=5,p=0.5)),
     augment_fn2=K.AugmentationSequential(K.RandomResizedCrop(p=0.5,size=(256,256)),
                                          K.RandomInvert(p=0.5)),
@@ -47,6 +48,7 @@ opt = torch.optim.Adam(learner.parameters(), lr=3e-4)
 
 def sample_unlabelled_images():
     images, _ = next(iter(train_loader))
+    images = images.to(device)
     return images
 
 for _ in range(10000):
