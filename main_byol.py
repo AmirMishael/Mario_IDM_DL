@@ -37,7 +37,7 @@ learner = BYOL(
     image_size = 256,
     hidden_layer = 'avgpool',
     augment_fn=K.AugmentationSequential(K.RandomGaussianBlur(p=0.5,sigma=(0.1,2.0),kernel_size=(3,3)),
-                                        K.RandromRotation(degrees=5,p=0.5)),
+                                        K.RandomRotation(degrees=5,p=0.5)),
     augment_fn2=K.AugmentationSequential(K.RandomResizedCrop(p=0.5,size=(256,256)),
                                          K.RandomInvert(p=0.5)),
 
