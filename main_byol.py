@@ -1,6 +1,7 @@
 import os
 import pathlib
 import torch
+from tqdm import tqdm
 import kornia.augmentation as K
 from helper_code.my_byol import BYOL
 from helper_code.resnet_model import ResnetModel
@@ -35,7 +36,7 @@ learner = BYOL(
     model,
     channels=group*3 if use_color else group,
     image_size = 256,
-    hidden_layer = 'avgpool',
+    hidden_layer = 'resnet.avgpool',
     augment_fn=K.AugmentationSequential(K.RandomGaussianBlur(p=0.5,sigma=(0.1,2.0),kernel_size=(3,3)),
                                         K.RandomRotation(degrees=5,p=0.5)),
     augment_fn2=K.AugmentationSequential(K.RandomResizedCrop(p=0.5,size=(256,256)),
@@ -47,11 +48,12 @@ learner = BYOL(
 opt = torch.optim.Adam(learner.parameters(), lr=3e-4)
 
 def sample_unlabelled_images():
-    images, _ = next(iter(train_loader))
+    images, _ ,_= next(iter(train_loader))
     images = images.to(device)
     return images
 
-for _ in range(10000):
+print("start training BYOL")
+for _ in tqdm(range(10000)):
     images = sample_unlabelled_images()
     loss = learner(images)
     opt.zero_grad()
@@ -59,5 +61,6 @@ for _ in range(10000):
     opt.step()
     learner.update_moving_average() # update moving average of target encoder
 
+print("finished training BYOL, saving.")
 # save your improved network
 torch.save(model.state_dict(), os.path.join(modles_path,'improved-net.pt'))
