@@ -52,7 +52,7 @@ def create_metadata(frames_dir,metadata_path,model,group_size):
                         'right':[label_item[2].item()],
                         'B':[label_item[3].item()]})
 
-        df = df.concat([df,row],ignore_index=True)
+        df = pd.concat([df,row],ignore_index=True)
         q.pop(0)
         q.append(transform(Image.open(files[i+group_size])))
     df.to_csv(metadata_path,index=False)
