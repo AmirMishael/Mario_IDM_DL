@@ -43,6 +43,7 @@ learner = BYOL(
                                          K.RandomInvert(p=0.5)),
 
 )
+learner = learner.to(device)
 
 
 opt = torch.optim.Adam(learner.parameters(), lr=3e-4)
