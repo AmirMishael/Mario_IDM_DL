@@ -13,7 +13,7 @@ class MarioHistoryDataset(Dataset):
         self.history_frames = history_frames
         self.img_dir = img_dir
         self.use_color = use_color
-        self.metadata = pd.read_csv(metadata_file)
+        self.metadata = pd.read_csv(metadata_file,columns=['id,image_path','up','left','right','B'],dtype={'id':int,'image_path':str,'up':float,'left':float,'right':float,'B':float})
         self.transform = torchvision.transforms.Compose([
             torchvision.transforms.Resize((256,256)),
             #torchvision.transforms.Grayscale(num_output_channels=1),
