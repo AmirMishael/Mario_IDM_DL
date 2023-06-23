@@ -38,7 +38,7 @@ def create_metadata(frames_dir,metadata_path,model,group_size):
     model.eval()
     files = sorted(glob.glob(os.path.join(frames_dir, '*.jpg')), key=lambda x: int(Path(x).name.split('.')[0]))
     #group every 15 frames
-    q = [transform(Image.open(filename)) for filename in files[:group_size]]
+    q = [transform(Image.open(filename)).squeeze() for filename in files[:group_size]]
     for i,filename in tqdm(enumerate(files[:len(files)-group_size])):
         input_tensor = torch.stack(q)
         image = input_tensor.to(device)
