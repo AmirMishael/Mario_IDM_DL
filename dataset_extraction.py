@@ -50,7 +50,7 @@ def create_metadata(frames_dir,metadata_path,model,group_size):
                         ,'up':label_item[0].item(),
                         'left':label_item[1].item(),
                         'right':label_item[2].item(),
-                        'B':label_item[3].item()},columns=['id','image_path','up','left','right','B'])
+                        'B':label_item[3].item()})
 
         df = df.append(row,ignore_index=True)
         q.pop(0)
