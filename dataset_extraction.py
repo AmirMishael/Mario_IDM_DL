@@ -54,7 +54,7 @@ def create_metadata(frames_dir,metadata_path,model,group_size):
 
         df = pd.concat([df,row],ignore_index=True)
         q.pop(0)
-        q.append(transform(Image.open(files[i+group_size])))
+        q.append(transform(Image.open(files[i+group_size])).squeeze())
     df.to_csv(metadata_path,index=False)
 
 
