@@ -42,7 +42,7 @@ class MarioHistoryDataset(Dataset):
     
     def _get_image(self,idx,offset=0):
         metadata_img = self.metadata.iloc[idx]
-        current_img = Image.open(os.path.join(self.img_dir,int(metadata_img['id']))-offset)
+        current_img = Image.open(os.path.join(self.img_dir,f"{int(metadata_img['id'])-offset}.jpg"))
         if not self.use_color:
             current_img = current_img.convert("L")
         else:
