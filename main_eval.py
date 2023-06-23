@@ -23,4 +23,7 @@ for model_name in models_to_check:
     print(f"checking model: {model_name}")
     model = ResnetModel(group_size=group_size,use_color=use_color,use_pretrained=False).to(device)
     model.load_state_dict(torch.load(os.path.join(modles_path,model_name)))
-    calc_accuracy(model,mode='val',group_frames=group_size,use_color=False)
+    print("val")
+    calc_accuracy(model,mode='val',group_frames=group_size,use_color=use_color)
+    print("test")
+    calc_accuracy(model,mode='test',group_frames=group_size,use_color=use_color)
