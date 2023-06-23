@@ -104,7 +104,7 @@ def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_c
 
     
     print(f"loading dataset preload:{preload}")
-    mario_dataset = MarioHistoryDataset(img_dir='./mario_dataset',history_frames=group,use_color=use_color,preload=preload)
+    mario_dataset = MarioHistoryDataset(img_dir='./mario_dataset',history_frames=group,use_color=use_color,preload=preload,metadata_file='./mario_dataset/metadata.csv' )
     mario_dataset_train,mario_dataset_test,mario_dataset_val = torch.utils.data.random_split(mario_dataset,[0.8,0.1,0.1])
     print(f"tot train dataset frames :{len(mario_dataset_train)}")
 
