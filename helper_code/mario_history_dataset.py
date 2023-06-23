@@ -38,7 +38,7 @@ class MarioHistoryDataset(Dataset):
                 item[3*i+2] =  current_img[2]
                 
             
-        return item, self._extract_action(idx)
+        return item, self._extract_action(idx),f"{1}-{1}"
     
     def _get_image(self,idx,offset=0):
         metadata_img = self.metadata.iloc[idx]
