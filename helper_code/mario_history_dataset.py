@@ -52,6 +52,6 @@ class MarioHistoryDataset(Dataset):
         return current_img
     def _extract_action(self, idx):
         metadata_img = self.metadata.iloc[idx]
-        action_tensor = torch.Tensor(metadata_img[['up','left','right','B']].values)
+        action_tensor = torch.from_numpy(metadata_img[['up','left','right','B']].values)
         return action_tensor
         
