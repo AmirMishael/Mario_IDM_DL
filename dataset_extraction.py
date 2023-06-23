@@ -42,7 +42,7 @@ def create_metadata(frames_dir,metadata_path,model,group_size):
     for i,filename in tqdm(enumerate(files[:len(files)-group_size])):
         input_tensor = torch.stack(q).unsqueeze(0)
         image = input_tensor.to(device)
-        label_tensor = model(image)
+        label_tensor = torch.sigmoid(model(image))
         label_item = label_tensor[0]
         real_file_name = files[i+group_size//2]
         row = pd.DataFrame({'id':[Path(real_file_name).name.split('.')[0]]

@@ -1,5 +1,6 @@
 import pathlib
-from helper_code.resnet_model import ResnetModel
+from helper_code.mario_history_dataset import MarioHistoryDataset
+from helper_code.resnet_model import AgentModel, ResnetModel
 from helper_code.mario_buttons_dataset import TEST_WORLDS, TRAIN_WORLDS, VAL_WORLDS, MarioButtonsDataset
 import torch
 import torchvision
@@ -76,6 +77,56 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,us
             torch.save(model.state_dict(),f"{save_path}/best_model_group_{group}_color_{use_color}.pt")
         print(f"running loss : {running_loss} , epoch:{epoch}")
         #scheduler.step()
+
+def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_color=False,use_aug=False):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(device)
+    torch.manual_seed(17)
+
+
+    batch_size = 128
+    learning_rate = lr
+    epochs = 7
+    
+    group = group
+    use_color = use_color
+
+    preload=False
+    if use_aug:
+        aug_ls = [K.RandomGaussianNoise(mean=0,std=0.05,p=0.2),
+                  K.RandomInvert(p=0.2),
+                  K.RandomBoxBlur(kernel_size=(3,3),p=0.2),
+                  K.RandomErasing(p=0.2,scale=(0.02,0.05)),
+                  K.RandromRotation(degrees=5,p=0.2)]
+    else:
+        aug_ls = []
+
+
+    
+    print(f"loading dataset preload:{preload}")
+    mario_dataset = MarioHistoryDataset(img_dir='./mario_dataset',history_frames=group,use_color=use_color,preload=preload)
+    mario_dataset_train,mario_dataset_test,mario_dataset_val = torch.utils.data.random_split(mario_dataset,[0.8,0.1,0.1])
+    print(f"tot train dataset frames :{len(mario_dataset_train)}")
+
+    train_loader = torch.utils.data.DataLoader(mario_dataset_train,batch_size=batch_size,shuffle=True,num_workers=4)
+    #test_loader = torch.utils.data.DataLoader(mario_dataset_test,batch_size=batch_size,shuffle=True,num_workers=8)
+    val_loader = torch.utils.data.DataLoader(mario_dataset_val,batch_size=batch_size,shuffle=True,num_workers=4)
+
+    model = AgentModel(history_size=group,use_color=use_color).to(device)    
+    
+    train_loop(model = model,
+          data_loader = train_loader,
+          val_loader = val_loader,
+          device=device,
+          group=group,
+          epochs=epochs,
+          learning_rate=learning_rate,
+          use_color=use_color,
+          save_path=models_dir,
+          aug_list=aug_ls,
+          start_epoch=start_epoch,)
+    torch.save(model.state_dict(),f"{models_dir}/model_final_agent.pt")
+    print("model saved")
 
 def main_train(models_dir = "./models",checkpoint_path=None,start_epoch=0,lr=1e-3,group=7,use_color=False,use_aug=False):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
