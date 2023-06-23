@@ -45,12 +45,14 @@ def create_metadata(frames_dir,metadata_path,model,group_size):
         label_tensor = model(image)
         label_item = label_tensor[0]
         real_file_name = files[i+group_size//2]
-        df = df.append({'id':Path(real_file_name).name.split('.')[0]
+        row = pd.DataFrame({'id':Path(real_file_name).name.split('.')[0]
                         ,'image_path':filename
                         ,'up':label_item[0].item(),
                         'left':label_item[1].item(),
                         'right':label_item[2].item(),
-                        'B':label_item[3].item()},ignore_index=True)
+                        'B':label_item[3].item()},columns=['id','image_path','up','left','right','B'])
+
+        df = df.append(row,ignore_index=True)
         q.pop(0)
         q.append(transform(Image.open(files[i+group_size])))
     df.to_csv(metadata_path,index=False)
