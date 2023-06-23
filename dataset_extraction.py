@@ -40,7 +40,7 @@ def create_metadata(frames_dir,metadata_path,model,group_size):
     #group every 15 frames
     q = [transform(Image.open(filename)).squeeze() for filename in files[:group_size]]
     for i,filename in tqdm(enumerate(files[:len(files)-group_size])):
-        input_tensor = torch.stack(q)
+        input_tensor = torch.stack(q).unsqueeze(0)
         image = input_tensor.to(device)
         label_tensor = model(image)
         label_item = label_tensor[0]
