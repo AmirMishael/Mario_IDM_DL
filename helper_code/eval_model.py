@@ -1,4 +1,5 @@
 import pathlib
+from helper_code.mario_history_dataset import MarioHistoryDataset
 from helper_code.resnet_model import ResnetModel
 from helper_code.mario_buttons_dataset import TEST_WORLDS, TRAIN_WORLDS, VAL_WORLDS, MarioButtonsDataset
 import torch
@@ -46,5 +47,18 @@ def calc_accuracy(model,mode='test',group_frames=7,use_color=False):
     data_loader = torch.utils.data.DataLoader(mario_dataset,batch_size=128,shuffle=True,num_workers=8)
     model.eval() # put in evaluation mode,  turn of DropOut, BatchNorm uses learned statistics
     calculate_accuracy(model,data_loader,device)
+
+def calc_accuracy_agent(model,mode='test',history=7,use_color=False,metadata_file='./video/metadata.csv'):
+    mario_dataset = MarioHistoryDataset(img_dir='./video/frames',history_frames=history,use_color=use_color,preload=False,metadata_file=metadata_file)
+    mario_dataset_train,mario_dataset_test,mario_dataset_val = torch.utils.data.random_split(mario_dataset,[0.8,0.1,0.1])
+    if mode == 'test':
+        mario_dataset = mario_dataset_test
+    else:
+        mario_dataset = mario_dataset_val
+
+    data_loader = torch.utils.data.DataLoader(mario_dataset,batch_size=128,shuffle=True,num_workers=8)
+    model.eval() # put in evaluation mode,  turn of DropOut, BatchNorm uses learned statistics
+    calculate_accuracy(model,data_loader,device)
+
 
 

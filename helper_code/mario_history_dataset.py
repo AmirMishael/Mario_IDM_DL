@@ -21,7 +21,7 @@ class MarioHistoryDataset(Dataset):
             
             #torchvision.transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
         ])
-        self.total_length = len(self.metadata)# - self.history_frames + 1
+        self.total_length = len(self.metadata)-10# - self.history_frames + 1
         self.shape = (256,256)#Image.open(os.path.join(episode_dir,self.file_names[0])).convert("L").size
     def __len__(self):
         return self.total_length
@@ -41,7 +41,13 @@ class MarioHistoryDataset(Dataset):
         return item, self._extract_action(idx),f"{1}-{1}"
     
     def _get_image(self,idx,offset=0):
-        metadata_img = self.metadata.iloc[idx]
+        try:
+            metadata_img = self.metadata.iloc[idx]
+        except:
+            with open("error.txt","a") as f:
+                f.write(f"idx:{idx}, offset:{offset}, total length:{self.total_length}\n")
+            raise
+            
         current_img = Image.open(os.path.join(self.img_dir,f"{int(metadata_img['id'])-offset}.jpg"))
         if not self.use_color:
             current_img = current_img.convert("L")
