@@ -43,19 +43,18 @@ class MarioHistoryDataset(Dataset):
     def _get_image(self,idx,offset=0):
         try:
             metadata_img = self.metadata.iloc[idx]
+            current_img = Image.open(os.path.join(self.img_dir,f"{int(metadata_img['id'])-offset}.jpg"))
+            if not self.use_color:
+                current_img = current_img.convert("L")
+            else:
+                current_img = current_img.convert("RGB")
+            if self.transform:
+                current_img = self.transform(current_img)
+            return current_img
         except:
             with open("error.txt","a") as f:
                 f.write(f"idx:{idx}, offset:{offset}, total length:{self.total_length}\n")
             raise
-            
-        current_img = Image.open(os.path.join(self.img_dir,f"{int(metadata_img['id'])-offset}.jpg"))
-        if not self.use_color:
-            current_img = current_img.convert("L")
-        else:
-            current_img = current_img.convert("RGB")
-        if self.transform:
-            current_img = self.transform(current_img)
-        return current_img
     def _extract_action(self, idx):
         metadata_img = self.metadata.iloc[idx]
         #print(metadata_img[['up','left','right','B']].values.tolist())
