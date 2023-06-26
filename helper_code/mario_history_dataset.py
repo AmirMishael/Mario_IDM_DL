@@ -28,7 +28,7 @@ class MarioHistoryDataset(Dataset):
     def __getitem__(self, idx):
         item = torch.zeros((self.history_frames,self.shape[1],self.shape[0]))
         for i in range(self.history_frames):
-            current_img = self._get_image(idx+i)
+            current_img = self._get_image(idx,i)
             #print(f"shape:{current_img.shape},shape single:{current_img[0].shape}")
             if not self.use_color:
                 item[i] = current_img
