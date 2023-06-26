@@ -39,16 +39,16 @@ def create_metadata(frames_dir,metadata_path,model,group_size):
     df = pd.DataFrame(columns=['id,image_path','up','left','right','B'])
     model.eval()
     files = sorted(glob.glob(os.path.join(frames_dir, '*.jpg')), key=lambda x: int(Path(x).name.split('.')[0]))
-    #group every 7 frames
+    #group every 15 frames
     q = [transform(Image.open(filename)).squeeze() for filename in files[:group_size]]
     for i,filename in tqdm(enumerate(files[group_size:])):
         input_tensor = torch.stack(q).unsqueeze(0)
         image = input_tensor.to(device)
         label_tensor = torch.sigmoid(model(image))
         label_item = label_tensor[0]
-        # real_file_name = files[i+group_size//2]
-        row = pd.DataFrame({'id':[i]
-                        ,'image_path':[filename]
+        real_file_name = files[i+group_size//2]
+        row = pd.DataFrame({'id':[Path(real_file_name).name.split('.')[0]]
+                        ,'image_path':[real_file_name]
                         ,'up':[label_item[0].item()],
                         'left':[label_item[1].item()],
                         'right':[label_item[2].item()],
