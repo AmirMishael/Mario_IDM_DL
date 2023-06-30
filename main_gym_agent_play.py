@@ -13,6 +13,19 @@ env = JoypadSpace(env, COMPLEX_MOVEMENT)
 
 done = False
 
+def image_seq_to_video(img_array, output_path='./video.mp4', fps=15.0):
+    output = output_path
+
+    print("writing video...")
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Be sure to use lower case
+    out = cv2.VideoWriter(output, fourcc, fps, (256,256))
+    # out = cv2.VideoWriter('project.avi', cv2.VideoWriter_fourcc(*'DIVX'), 15, size)
+
+    for i in range(len(img_array)):
+        out.write(img_array[i])
+    out.release()
+    print("saved video @ ", output)
+
 def action_mapper(action_tensor):
     COMPLEX_MOVEMENT_DICT = {
         "0-0-0-0":0,#['NOOP'],
@@ -49,9 +62,7 @@ transform =  torchvision.transforms.Compose([
             #torchvision.transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
 ])
 
-fourcc = cv2.VideoWriter_fourcc('m','p','4','v')
-out = cv2.VideoWriter('./video/mario_play.mp4', fourcc, 30  ,(256,256))
-
+all_frames = []
 
 print(f"action space:{env.action_space}")
 env.reset()
@@ -59,7 +70,7 @@ for step in range(100):
     if done:
         break
     if len(q_frames_history) < history_size:
-        action = env.action_space.sample() #['NOOP']
+        action = 0 #['NOOP']
     else:
         model_input = torch.zeros((7,256,256))
         input_tensor = torch.stack(q_frames_history).unsqueeze(0)
@@ -71,9 +82,12 @@ for step in range(100):
     print(f"step:{step} , action:{action} , reward:{reward} , done:{done} , info:{info}")
     pil_img = Image.fromarray(state)
     opencvImage = cv2.cvtColor(state, cv2.COLOR_RGB2BGR)
+    cv2.saveImage('../test_run/{step}.jpg',opencvImage)
     q_frames_history.append(transform(pil_img).squeeze())
     q_frames_history.pop(0)
-    out.write(opencvImage)
+
+    all_frames.append(state)
     #env.render()
 
+image_seq_to_video(all_frames,output_path='../test_run/mario_play.mp4',fps=30.0)
 env.close()
