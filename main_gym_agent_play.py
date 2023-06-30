@@ -13,19 +13,24 @@ env = JoypadSpace(env, COMPLEX_MOVEMENT)
 
 done = False
 
-
 def action_mapper(action_tensor):
+    COMPLEX_MOVEMENT_DICT = {
+        "0-0-0-0":0,#['NOOP'],
+        "0-0-1-0":1,#['right'],
+        "1-0-1-0":2,#['right', 'A'],
+        "0-0-1-1":3,#['right', 'B'],
+        "1-0-1-1":4,#['right', 'A', 'B'],
+        "1-0-0-0":5,#['A'],
+        "0-1-0-0" : 6,#['left'],
+        "1-1-0-0" : 7,#['left', 'A'],
+        "0-1-0-1" : 8,#['left', 'B'],
+        "1-1-0-1": 9,#['left', 'A', 'B'],
+        #['down'],
+        #['up'],
+    }
     action_tensor = action_tensor[0].cpu()
-    action = []
-    if action_tensor[1].item() > 0.5:
-        action.append("left")
-    if action_tensor[2].item() > 0.5:
-        action.append("right")
-    if action_tensor[0].item() > 0.5:
-        action.append("up")
-    if action_tensor[3].item() > 0.5:
-        action.append("B")
-    print(f"chosen action:{action}")
+    key = "-".join([action_tensor[i].item() for i in range(4)])
+    action = COMPLEX_MOVEMENT_DICT[key]
     return action
 #model
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
