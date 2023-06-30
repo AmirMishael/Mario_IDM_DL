@@ -1,5 +1,6 @@
 import torch
 import torchvision
+from PIL import Image
 from helper_code.resnet_model import AgentModel
 from nes_py.wrappers import JoypadSpace
 import gym_super_mario_bros
@@ -32,7 +33,7 @@ model.eval()
 q_frames_history = []
 transform =  torchvision.transforms.Compose([
             torchvision.transforms.Resize((256,256)),
-            #torchvision.transforms.Grayscale(num_output_channels=1),
+            torchvision.transforms.Grayscale(num_output_channels=1),
             torchvision.transforms.ToTensor(),
             
             #torchvision.transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
@@ -53,7 +54,7 @@ for step in range(10):
 
     state, reward, done, info = env.step(action)
     print(f"step:{step} , action:{action} , reward:{reward} , done:{done} , info:{info}")
-    print(f"state:{state.shape}")
+    pil_img = Image.fromarray(state)
     #env.render()
 
 env.close()
