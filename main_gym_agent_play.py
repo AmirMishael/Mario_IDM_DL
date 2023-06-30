@@ -1,10 +1,13 @@
 import torch
 import torchvision
 from PIL import Image
+import cv2
 from helper_code.resnet_model import AgentModel
 from nes_py.wrappers import JoypadSpace
 import gym_super_mario_bros
 from gym_super_mario_bros.actions import SIMPLE_MOVEMENT,COMPLEX_MOVEMENT
+
+
 env = gym_super_mario_bros.make('SuperMarioBros-v0')
 env = JoypadSpace(env, COMPLEX_MOVEMENT)
 
@@ -39,8 +42,12 @@ transform =  torchvision.transforms.Compose([
             #torchvision.transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
 ])
 
+fourcc = cv2.VideoWriter_fourcc('m','p','4','v')
+out = cv2.VideoWriter('./video/mario_play.mp4', fourcc, 30  ,(256,256))
+print("writing video")
+
 env.reset()
-for step in range(10):
+for step in range(100):
     if done:
         break
     if len(q_frames_history) < 7:
@@ -55,6 +62,9 @@ for step in range(10):
     state, reward, done, info = env.step(action)
     print(f"step:{step} , action:{action} , reward:{reward} , done:{done} , info:{info}")
     pil_img = Image.fromarray(state)
+    opencvImage = cv2.cvtColor(state, cv2.COLOR_RGB2BGR)
+    q_frames_history.append(transform(pil_img).squeeze())
+    out.write(opencvImage)
     #env.render()
 
 env.close()
