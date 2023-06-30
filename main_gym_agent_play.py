@@ -85,11 +85,13 @@ for step in range(500):
     else:
         input_tensor = torch.stack(q_frames_history).unsqueeze(0)
         image = input_tensor.to(device)
-        action_tensor = torch.round(torch.sigmoid(model(image)))
+        output_tensor = torch.sigmoid(model(image))
+        action_tensor = torch.round(output_tensor)
         action = action_mapper(action_tensor)
+        print(f"action_tensor:{output_tensor} , action:{action} , step:{step}")
 
     state, reward, done, info = env.step(action)
-    print(f"step:{step} , action:{action} , reward:{reward} , done:{done} , info:{info}")
+    #print(f"step:{step} , action:{action} , reward:{reward} , done:{done} , info:{info}")
     pil_img = Image.fromarray(state)
     opencvImage = cv2.cvtColor(state, cv2.COLOR_RGB2BGR)
     cv2.imwrite(f'../test_run/{step}.jpg',opencvImage)
