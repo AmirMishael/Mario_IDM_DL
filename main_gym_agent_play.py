@@ -82,6 +82,8 @@ for step in range(500):
         break
     if len(q_frames_history) < history_size:
         action = 1 #['NOOP']
+    elif step < 100:
+        action = 1
     else:
         input_tensor = torch.stack(q_frames_history).unsqueeze(0)
         image = input_tensor.to(device)
