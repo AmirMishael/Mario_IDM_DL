@@ -29,7 +29,7 @@ def action_mapper(action_tensor):
         #['up'],
     }
     action_tensor = action_tensor[0].cpu()
-    key = "-".join([action_tensor[i].item() for i in range(4)])
+    key = "-".join([str(int(action_tensor[i].item())) for i in range(4)])
     action = COMPLEX_MOVEMENT_DICT[key]
     return action
 #model
