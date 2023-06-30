@@ -82,12 +82,12 @@ for step in range(100):
     print(f"step:{step} , action:{action} , reward:{reward} , done:{done} , info:{info}")
     pil_img = Image.fromarray(state)
     opencvImage = cv2.cvtColor(state, cv2.COLOR_RGB2BGR)
-    cv2.saveImage('../test_run/{step}.jpg',opencvImage)
+    #cv2.saveImage('../test_run/{step}.jpg',opencvImage)
     q_frames_history.append(transform(pil_img).squeeze())
     q_frames_history.pop(0)
 
     all_frames.append(state)
     #env.render()
 
-image_seq_to_video(all_frames,output_path='../test_run/mario_play.mp4',fps=30.0)
+image_seq_to_video(all_frames,output_path='./video/mario_play.mp4',fps=30.0)
 env.close()
