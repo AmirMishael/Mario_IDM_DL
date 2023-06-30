@@ -40,7 +40,7 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,us
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
     #optimizer = torch.optim.Adam(model.resnet.fc.parameters(), lr=learning_rate)
-    criterion = torch.nn.BCEWithLogitsLoss()
+    criterion = torch.nn.BCEWithLogitsLoss(pos_weight=torch.Tensor([5,10,1,1]).to(device))
     
     # for _ in range(start_batch):
     #     next(data_loader)

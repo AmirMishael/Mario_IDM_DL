@@ -8,6 +8,7 @@ from torch.distributed import group
 from tqdm import tqdm
 import pandas as pd
 from PIL import Image
+from helper_code.mario_buttons_dataset import MarioEpisode
 from helper_code.resnet_model import ResnetModel
 from pathlib import Path
 
@@ -59,9 +60,30 @@ def create_metadata(frames_dir,metadata_path,model,group_size):
         q.append(transform(Image.open(files[i+group_size])).squeeze())
     df.to_csv(metadata_path,index=False)
 
+def convert_buttons_to_history(episode_path:str,history_size:int = 7 , metadata_path:str = './video/metadata.csv',frames_path:str = './video/frames'):
+    mario_buttons_ep = MarioEpisode(episode_dir=episode_path,group_frames=history_size,transform=None)
+    metadata_df = pd.DataFrame(columns=['id,image_path','up','left','right','B'])
 
+    for i in range(len(mario_buttons_ep)):
+        img = mario_buttons_ep._get_image(i)
+        Image.save(img,os.path.join(frames_path,f"{i}.jpg"))
+        if i >= history_size:
+            real_file_name = os.path.join(frames_path,f"{i}.jpg")
+            action = mario_buttons_ep._extract_action(os.path.join(episode_path,f"{mario_buttons_ep.file_names[i]}.jpg"))
+            row = pd.DataFrame({'id':[Path(real_file_name).name.split('.')[0]]
+                            ,'image_path':[real_file_name]
+                            ,'up':[action[0].item()],
+                            'left':[action[1].item()],
+                            'right':[action[2].item()],
+                            'B':[action[3].item()]})
+
+            df = pd.concat([df,row],ignore_index=True)
+    metadata_df.to_csv(metadata_path,index=False) 
+        
+        
 #extract_frames('./video/video.mp4', './video/frames',start_sec=10,stop_sec=35*60)
-group_size = 15
-model = ResnetModel(group_size=group_size,use_color=False).to(device)
-model.load_state_dict(torch.load('./models/best_model_group_15_color_False.pt'))
-create_metadata(frames_dir='./video/frames',metadata_path='./video/metadata.csv',model=model,group_size=group_size)
+#group_size = 15
+#model = ResnetModel(group_size=group_size,use_color=False).to(device)
+#model.load_state_dict(torch.load('./models/best_model_group_15_color_False.pt'))
+#create_metadata(frames_dir='./video/frames',metadata_path='./video/metadata.csv',model=model,group_size=group_size)
+convert_buttons_to_history(episode_path='./video/episodes/0-0-1-1',history_size=7,metadata_path='./video/metadata2.csv',frames_path='./video/frames2')
