@@ -1,3 +1,5 @@
+import glob
+import os
 import torch
 import torchvision
 from PIL import Image
@@ -13,19 +15,28 @@ env = JoypadSpace(env, COMPLEX_MOVEMENT)
 
 done = False
 
-def image_seq_to_video(img_array, output_path='./video.mp4', fps=15.0):
+def image_seq_to_video(imgs_path, output_path='./video.mp4', fps=15.0):
     output = output_path
+    img_array = []
+    for filename in sorted(glob.glob(os.path.join(imgs_path, '*.jpg')), key=os.path.getmtime):
+        img = cv2.imread(filename)
+        height, width, layers = img.shape
+        # img = cv2.resize(img, (width // 2, height // 2))
+        img = cv2.resize(img, (width, height))
+        height, width, layers = img.shape
+        size = (width, height)
+        img_array.append(img)
 
+    print(size)
     print("writing video...")
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Be sure to use lower case
-    out = cv2.VideoWriter(output, fourcc, fps, (256,256))
+    out = cv2.VideoWriter(output, fourcc, fps, size)
     # out = cv2.VideoWriter('project.avi', cv2.VideoWriter_fourcc(*'DIVX'), 15, size)
 
     for i in range(len(img_array)):
         out.write(img_array[i])
     out.release()
     print("saved video @ ", output)
-
 def action_mapper(action_tensor):
     COMPLEX_MOVEMENT_DICT = {
         "0-0-0-0":0,#['NOOP'],
@@ -82,12 +93,11 @@ for step in range(100):
     print(f"step:{step} , action:{action} , reward:{reward} , done:{done} , info:{info}")
     pil_img = Image.fromarray(state)
     opencvImage = cv2.cvtColor(state, cv2.COLOR_RGB2BGR)
-    #cv2.saveImage('../test_run/{step}.jpg',opencvImage)
+    cv2.imwrite('../test_run/{step}.jpg',opencvImage)
     q_frames_history.append(transform(pil_img).squeeze())
     q_frames_history.pop(0)
 
-    all_frames.append(opencvImage)
     #env.render()
 
-image_seq_to_video(all_frames,output_path='./video/mario_play.mp4',fps=30.0)
+image_seq_to_video("../test_run/",output_path='./video/mario_play.mp4',fps=30.0)
 env.close()
