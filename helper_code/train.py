@@ -114,17 +114,19 @@ def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_c
     val_loader = torch.utils.data.DataLoader(mario_dataset_val,batch_size=batch_size,shuffle=True,num_workers=4)
     
     additional_loaders = []
-    for name in ["Rafael_dp2a9j4i_e0_1-1_win","Rafael_dp2a9j4i_e28_1-1_win","Rafael_dp2a9j4i_e6_1-1_win","Rafael_psfmjpx6_e0_1-1_win","Rafael_ra0d7ivk_e0_1-1_win"]:
-        additional_dataset = MarioHistoryDataset(img_dir=f'./video/{name}_frames',history_frames=group,use_color=use_color,preload=preload,metadata_file=f'./video/metadata_{name}.csv' )
-        additional_loader = torch.utils.data.DataLoader(additional_dataset,batch_size=batch_size,shuffle=True,num_workers=4)
-        additional_loaders.append(additional_loader)
-    additional_loader.append(train_loader)
+    for file_name in os.path.listdir('./video/converted'):
+        if ".csv" in file_name:
+            name = file_name.split(".")[0].replace("metadata_","")
+            additional_dataset = MarioHistoryDataset(img_dir=f'./video/converted/{name}_frames',history_frames=group,use_color=use_color,preload=preload,metadata_file=f'./video/converted/metadata_{name}.csv' )
+            additional_loader = torch.utils.data.DataLoader(additional_dataset,batch_size=batch_size,shuffle=True,num_workers=4)
+            additional_loaders.append(additional_loader)
+    additional_loaders.append(train_loader)
 
 
     model = AgentModel(history_size=group,use_color=use_color).to(device)    
     
     train_loop(model = model,
-          data_loaders = additional_loader,
+          data_loaders = additional_loaders,
           val_loader = val_loader,
           device=device,
           group=group,

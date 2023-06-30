@@ -87,7 +87,7 @@ def convert_buttons_to_history(episode_path:str,history_size:int = 7 , metadata_
 #model = ResnetModel(group_size=group_size,use_color=False).to(device)
 #model.load_state_dict(torch.load('./models/best_model_group_15_color_False.pt'))
 #create_metadata(frames_dir='./video/frames',metadata_path='./video/metadata.csv',model=model,group_size=group_size)
-for file in os.listdir('./mario_dataset/..'):
+for file in os.listdir('./mario_dataset/'):
     if "win" in file:
-        convert_buttons_to_history(episode_path=f'./mario_dataset/{file}',history_size=7,metadata_path=f'./video/metadata_{file}.csv',frames_path='./video/{file}_frames')
+        convert_buttons_to_history(episode_path=f'./mario_dataset/{file}',history_size=7,metadata_path=f'./video/converted/metadata_{file}.csv',frames_path=f'./video/converted/{file}_frames')
 
