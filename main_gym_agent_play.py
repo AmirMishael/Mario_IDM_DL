@@ -92,7 +92,7 @@ for step in range(500):
     print(f"step:{step} , action:{action} , reward:{reward} , done:{done} , info:{info}")
     pil_img = Image.fromarray(state)
     opencvImage = cv2.cvtColor(state, cv2.COLOR_RGB2BGR)
-    cv2.imwrite('../test_run/{step}.jpg',opencvImage)
+    cv2.imwrite(f'../test_run/{step}.jpg',opencvImage)
     q_frames_history.append(transform(pil_img).squeeze())
     q_frames_history.pop(0)
 
