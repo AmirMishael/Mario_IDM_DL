@@ -33,9 +33,10 @@ def action_mapper(action_tensor):
     action = COMPLEX_MOVEMENT_DICT[key]
     return action
 #model
+history_size = 7
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 model_path = "./models/agents_model/model_final_agent.pt"
-model = AgentModel(history_size=7,use_color=False).to(device)
+model = AgentModel(history_size=history_size,use_color=False).to(device)
 model.load_state_dict(torch.load(model_path))
 model.eval()
 
@@ -57,7 +58,7 @@ env.reset()
 for step in range(100):
     if done:
         break
-    if len(q_frames_history) < 7:
+    if len(q_frames_history) < history_size:
         action = env.action_space.sample() #['NOOP']
     else:
         model_input = torch.zeros((7,256,256))
@@ -71,6 +72,7 @@ for step in range(100):
     pil_img = Image.fromarray(state)
     opencvImage = cv2.cvtColor(state, cv2.COLOR_RGB2BGR)
     q_frames_history.append(transform(pil_img).squeeze())
+    q_frames_history.pop(0)
     out.write(opencvImage)
     #env.render()
 
