@@ -43,7 +43,7 @@ for step in range(10):
     if done:
         break
     if len(q_frames_history) < 7:
-        action = ['NOOP']
+        action = env.action_space.sample() #['NOOP']
     else:
         model_input = torch.zeros((7,256,256))
         input_tensor = torch.stack(q_frames_history).unsqueeze(0)
