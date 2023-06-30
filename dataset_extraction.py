@@ -63,7 +63,8 @@ def create_metadata(frames_dir,metadata_path,model,group_size):
 def convert_buttons_to_history(episode_path:str,history_size:int = 7 , metadata_path:str = './video/metadata.csv',frames_path:str = './video/frames'):
     mario_buttons_ep = MarioEpisode(episode_dir=episode_path,group_frames=history_size,transform=None)
     metadata_df = pd.DataFrame(columns=['id,image_path','up','left','right','B'])
-
+    if not os.path.exists(frames_path):
+        os.makedirs(frames_path)
     for i in range(len(mario_buttons_ep)):
         img = mario_buttons_ep._get_image(i)
         img.save(os.path.join(frames_path,f"{i}.jpg"))
@@ -86,4 +87,7 @@ def convert_buttons_to_history(episode_path:str,history_size:int = 7 , metadata_
 #model = ResnetModel(group_size=group_size,use_color=False).to(device)
 #model.load_state_dict(torch.load('./models/best_model_group_15_color_False.pt'))
 #create_metadata(frames_dir='./video/frames',metadata_path='./video/metadata.csv',model=model,group_size=group_size)
-convert_buttons_to_history(episode_path='./video/episodes/0-0-1-1',history_size=7,metadata_path='./video/metadata2.csv',frames_path='./video/frames2')
+for file in os.listdir('./mario_dataset/..'):
+    if "win" in file:
+        convert_buttons_to_history(episode_path=f'./mario_dataset/{file}',history_size=7,metadata_path=f'./video/metadata_{file}.csv',frames_path='./video/{file}_frames')
+
