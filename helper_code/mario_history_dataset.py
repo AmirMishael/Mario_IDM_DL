@@ -41,25 +41,22 @@ class MarioHistoryDataset(Dataset):
         return item, self._extract_action(idx),f"{1}-{1}"
     
     def _get_image(self,idx,offset=0):
-        try:
-            metadata_img = self.metadata.iloc[idx]
-            current_img = Image.open(os.path.join(self.img_dir,f"{int(metadata_img['id'])-offset}.jpg"))
-            if not self.use_color:
-                current_img = current_img.convert("L")
-            else:
-                current_img = current_img.convert("RGB")
-            if self.transform:
-                current_img = self.transform(current_img)
-            return current_img
-        except:
-            with open("error.txt","a") as f:
-                f.write(f"idx:{idx}, offset:{offset}, total length:{self.total_length}\n")
-            raise
+        metadata_img = self.metadata.iloc[idx]
+        img_path = os.path.join(self.img_dir,f"{int(metadata_img['id'])-offset}.jpg")
+        #print(f"loading image :{img_path}")
+        current_img = Image.open(img_path)
+        if not self.use_color:
+            current_img = current_img.convert("L")
+        else:
+            current_img = current_img.convert("RGB")
+        if self.transform:
+            current_img = self.transform(current_img)
+        return current_img
     def _extract_action(self, idx):
         metadata_img = self.metadata.iloc[idx]
         #print(metadata_img[['up','left','right','B']].values.tolist())
         #print(metadata_img[['up','left','right','B']].values.tolist())
         #print(type(metadata_img[['up','left','right','B']].values))
-        action_tensor = torch.Tensor(metadata_img[['up','left','right','B']].values.tolist())
+        action_tensor = torch.round(torch.Tensor(metadata_img[['up','left','right','B']].values.tolist()))
         return action_tensor
         

@@ -28,7 +28,7 @@ def calculate_accuracy(model, dataloader, device):
             total_correct += (predicted == buttons).sum().item()
 
     model_accuracy = total_correct / total_inputs
-    print(f"accuracy: {model_accuracy}")
+    print(f"accuracy: {model_accuracy} , total_correct:{total_correct} , total_inputs:{total_inputs}")
     return model_accuracy 
 
 def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,use_color,save_path='./models'
@@ -75,7 +75,7 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,us
         if val_accuracy > max_val_accuracy:
             max_val_accuracy = val_accuracy
             torch.save(model.state_dict(),f"{save_path}/best_model_group_{group}_color_{use_color}.pt")
-        print(f"running loss : {running_loss} , epoch:{epoch}")
+        print(f"running loss : {running_loss} , epoch:{epoch} ,max_val_accuracy:{max_val_accuracy} ,val_accuracy:{val_accuracy}")
         #scheduler.step()
 
 def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_color=False,use_aug=False):
@@ -97,7 +97,7 @@ def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_c
                   K.RandomInvert(p=0.2),
                   K.RandomBoxBlur(kernel_size=(3,3),p=0.2),
                   K.RandomErasing(p=0.2,scale=(0.02,0.05)),
-                  K.RandromRotation(degrees=5,p=0.2)]
+                  K.RandomRotation(degrees=5,p=0.2)]
     else:
         aug_ls = []
 
