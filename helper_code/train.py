@@ -31,7 +31,7 @@ def calculate_accuracy(model, dataloader, device):
     print(f"accuracy: {model_accuracy} , total_correct:{total_correct} , total_inputs:{total_inputs}")
     return model_accuracy 
 
-def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,use_color,save_path='./models'
+def train_loop(model,data_loaders,val_loader,device,group,epochs,learning_rate,use_color,save_path='./models'
                ,aug_list=[],start_epoch=0):
     print(f"started training with hyperparams: group:{group}, epochs:{epochs}, learning_rate:{learning_rate} ,use_color:{use_color} ,aug_list:{len(aug_list)},start_epoch:{start_epoch}")
     loss_history=[]
@@ -49,25 +49,26 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,us
     for epoch in range(start_epoch+1,epochs):
         model.train()
         running_loss = 0.0
-        for i,data in enumerate(tqdm(data_loader,desc=f"training epoch:{epoch}")):
-            inputs,buttons,world_level = data
-            inputs = inputs.to(device)
-            buttons = buttons.to(device)
-            if aug_list:
-                inputs = aug_list[torch.randint(0,len(aug_list),(1,))](inputs)
-            output = model(inputs)
-            loss = criterion(output,buttons)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+        for data_loader in data_loaders:
+            for i,data in enumerate(tqdm(data_loader,desc=f"training epoch:{epoch}")):
+                inputs,buttons,world_level = data
+                inputs = inputs.to(device)
+                buttons = buttons.to(device)
+                if aug_list:
+                    inputs = aug_list[torch.randint(0,len(aug_list),(1,))](inputs)
+                output = model(inputs)
+                loss = criterion(output,buttons)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
 
-            los_val = loss.data.item()
-            running_loss += los_val
+                los_val = loss.data.item()
+                running_loss += los_val
 
-            if i % 500 == 0:
-                print(f"saving checkpoint at epoch:{epoch}, batch:{i}, loss:{los_val}")
-                torch.save(model.state_dict(),f"{save_path}/checkpoints/checkpoint_{epoch}_{i}_group_{group}_color_{use_color}.pt")
-    
+                if i % 500 == 0:
+                    print(f"saving checkpoint at epoch:{epoch}, batch:{i}, loss:{los_val}")
+                    torch.save(model.state_dict(),f"{save_path}/checkpoints/checkpoint_{epoch}_{i}_group_{group}_color_{use_color}.pt")
+        
         loss_history.append(running_loss)
         running_loss /= len(data_loader)
 
@@ -111,11 +112,19 @@ def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_c
     train_loader = torch.utils.data.DataLoader(mario_dataset_train,batch_size=batch_size,shuffle=True,num_workers=4)
     #test_loader = torch.utils.data.DataLoader(mario_dataset_test,batch_size=batch_size,shuffle=True,num_workers=8)
     val_loader = torch.utils.data.DataLoader(mario_dataset_val,batch_size=batch_size,shuffle=True,num_workers=4)
+    
+    additional_loaders = []
+    for name in ["Rafael_dp2a9j4i_e0_1-1_win","Rafael_dp2a9j4i_e28_1-1_win","Rafael_dp2a9j4i_e6_1-1_win","Rafael_psfmjpx6_e0_1-1_win","Rafael_ra0d7ivk_e0_1-1_win"]:
+        additional_dataset = MarioHistoryDataset(img_dir=f'./video/{name}_frames',history_frames=group,use_color=use_color,preload=preload,metadata_file=f'./video/metadata_{name}.csv' )
+        additional_loader = torch.utils.data.DataLoader(additional_dataset,batch_size=batch_size,shuffle=True,num_workers=4)
+        additional_loaders.append(additional_loader)
+    additional_loader.append(train_loader)
+
 
     model = AgentModel(history_size=group,use_color=use_color).to(device)    
     
     train_loop(model = model,
-          data_loader = train_loader,
+          data_loaders = additional_loader,
           val_loader = val_loader,
           device=device,
           group=group,

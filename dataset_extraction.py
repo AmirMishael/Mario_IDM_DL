@@ -66,7 +66,7 @@ def convert_buttons_to_history(episode_path:str,history_size:int = 7 , metadata_
 
     for i in range(len(mario_buttons_ep)):
         img = mario_buttons_ep._get_image(i)
-        Image.save(img,os.path.join(frames_path,f"{i}.jpg"))
+        img.save(os.path.join(frames_path,f"{i}.jpg"))
         if i >= history_size:
             real_file_name = os.path.join(frames_path,f"{i}.jpg")
             action = mario_buttons_ep._extract_action(os.path.join(episode_path,f"{mario_buttons_ep.file_names[i]}.jpg"))
@@ -77,7 +77,7 @@ def convert_buttons_to_history(episode_path:str,history_size:int = 7 , metadata_
                             'right':[action[2].item()],
                             'B':[action[3].item()]})
 
-            df = pd.concat([df,row],ignore_index=True)
+            metadata_df = pd.concat([metadata_df,row],ignore_index=True)
     metadata_df.to_csv(metadata_path,index=False) 
         
         
