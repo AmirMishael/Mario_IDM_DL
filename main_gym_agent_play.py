@@ -51,8 +51,8 @@ for step in range(10):
         action_tensor = torch.round(torch.sigmoid(model(image)))
         action = action_mapper(action_tensor)
 
-    state, reward, done, truncated, info = env.step(action)
-    print(f"step:{step} , action:{action} , reward:{reward} , done:{done} ,truncated:{truncated} , info:{info}")
+    state, reward, done, info = env.step(action)
+    print(f"step:{step} , action:{action} , reward:{reward} , done:{done} , info:{info}")
     print(f"state:{state.shape}")
     #env.render()
 
