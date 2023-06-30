@@ -80,10 +80,8 @@ env.reset()
 for step in range(500):
     if done:
         break
-    if len(q_frames_history) < history_size:
+    if step < 10:
         action = 1 #['NOOP']
-    elif step < 100:
-        action = 1
     else:
         input_tensor = torch.stack(q_frames_history).unsqueeze(0)
         image = input_tensor.to(device)
@@ -96,7 +94,8 @@ for step in range(500):
     opencvImage = cv2.cvtColor(state, cv2.COLOR_RGB2BGR)
     cv2.imwrite(f'../test_run/{step}.jpg',opencvImage)
     q_frames_history.append(transform(pil_img).squeeze())
-    q_frames_history.pop(0)
+    if len(q_frames_history) > history_size:
+        q_frames_history.pop(0)
 
     #env.render()
 
