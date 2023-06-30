@@ -13,4 +13,4 @@ main_train_agent(models_dir=modles_path
            ,lr=1e-3
            ,group=7
            ,use_color=False
-           ,use_aug=False)
+           ,use_aug=True)

@@ -38,7 +38,7 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,us
     max_val_accuracy = 0
 
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
     #optimizer = torch.optim.Adam(model.resnet.fc.parameters(), lr=learning_rate)
     criterion = torch.nn.BCEWithLogitsLoss()
     
@@ -76,7 +76,7 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,us
             max_val_accuracy = val_accuracy
             torch.save(model.state_dict(),f"{save_path}/best_model_group_{group}_color_{use_color}.pt")
         print(f"running loss : {running_loss} , epoch:{epoch} ,max_val_accuracy:{max_val_accuracy} ,val_accuracy:{val_accuracy}")
-        #scheduler.step()
+        scheduler.step()
 
 def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_color=False,use_aug=False):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -86,7 +86,7 @@ def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_c
 
     batch_size = 128
     learning_rate = lr
-    epochs = 7
+    epochs = 100
     
     group = group
     use_color = use_color
