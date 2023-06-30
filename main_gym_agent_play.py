@@ -45,8 +45,9 @@ transform =  torchvision.transforms.Compose([
 
 fourcc = cv2.VideoWriter_fourcc('m','p','4','v')
 out = cv2.VideoWriter('./video/mario_play.mp4', fourcc, 30  ,(256,256))
-print("writing video")
 
+
+print(f"action space:{env.action_space}")
 env.reset()
 for step in range(100):
     if done:
