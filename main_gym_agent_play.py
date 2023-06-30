@@ -59,7 +59,7 @@ def action_mapper(action_tensor):
 #model
 history_size = 7
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-model_path = "./models/agents_model/model_final_agent.pt"
+model_path = "./models/agents_model/best_model_group_7_color_False.pt"
 model = AgentModel(history_size=history_size,use_color=False).to(device)
 model.load_state_dict(torch.load(model_path))
 model.eval()
@@ -77,13 +77,12 @@ all_frames = []
 
 print(f"action space:{env.action_space}")
 env.reset()
-for step in range(100):
+for step in range(500):
     if done:
         break
     if len(q_frames_history) < history_size:
-        action = 0 #['NOOP']
+        action = 1 #['NOOP']
     else:
-        model_input = torch.zeros((7,256,256))
         input_tensor = torch.stack(q_frames_history).unsqueeze(0)
         image = input_tensor.to(device)
         action_tensor = torch.round(torch.sigmoid(model(image)))
@@ -99,5 +98,5 @@ for step in range(100):
 
     #env.render()
 
-image_seq_to_video("../test_run/",output_path='./video/mario_play.mp4',fps=30.0)
+image_seq_to_video("../test_run/",output_path='./video/mario_play.mp4',fps=60.0)
 env.close()
