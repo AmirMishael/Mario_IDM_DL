@@ -86,7 +86,7 @@ for step in range(100):
     q_frames_history.append(transform(pil_img).squeeze())
     q_frames_history.pop(0)
 
-    all_frames.append(state)
+    all_frames.append(opencvImage)
     #env.render()
 
 image_seq_to_video(all_frames,output_path='./video/mario_play.mp4',fps=30.0)
