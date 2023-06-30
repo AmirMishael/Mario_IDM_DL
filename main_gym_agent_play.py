@@ -25,6 +25,7 @@ def action_mapper(action_tensor):
         action.append("up")
     if action_tensor[3].item() > 0.5:
         action.append("B")
+    print(f"chosen action:{action}")
     return action
 #model
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
