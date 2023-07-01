@@ -71,8 +71,8 @@ class MarioHistoryEpisode(MarioEpisode):
         action = self._extract_action(self.file_names[idx + self.group_frames])
         return item,action,world_level
 class MarioHistoryButtonsDataset(MarioButtonsDataset):
-    def __init__(self, img_dir, history_size: int = 7, use_color=False, preload=False):
-        super().__init__(img_dir, group_frames=history_size, use_color=use_color, worlds=[TEST_WORLDS] + [TRAIN_WORLDS], preload=preload)
+    def __init__(self, img_dir, history_size: int = 7, worlds = TRAIN_WORLDS,use_color=False, preload=False):
+        super().__init__(img_dir, group_frames=history_size, use_color=use_color, worlds=worlds, preload=preload)
     
     def _load_episodes(self, worlds):
         for file in os.listdir(self.img_dir):
