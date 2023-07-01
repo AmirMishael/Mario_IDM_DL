@@ -124,8 +124,9 @@ def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_c
             additional_loaders.append(additional_loader)
     #additional_loaders.append(train_loader)
 
-
     model = AgentModel(history_size=group,use_color=use_color).to(device)    
+    if start_epoch > 0:
+        model.load_state_dict(torch.load(f"{models_dir}/best_model_group_{group}_color_{use_color}.pt"))
     
     train_loop(model = model,
           data_loaders = additional_loaders[:-1],
