@@ -53,5 +53,5 @@ class ResnetModel(nn.Module):
 
 class AgentModel(ResnetModel):
     def __init__(self, history_size: int = 7, use_color=False, use_pretrained: bool = False):
-        super().__init__(history_size, use_color, use_pretrained,resnet_type="resnet50")
+        super().__init__(history_size, use_color, use_pretrained,resnet_type="resnet18")
     

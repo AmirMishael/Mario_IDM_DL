@@ -10,6 +10,7 @@ TRAIN_WORLDS = [5,6,8]
 TEST_WORLDS = [3,4,7]
 VAL_WORLDS = [1,2]
 
+TRAIN_TEST = [3,4,5,6,7,8]
 
 class MarioEpisode(Dataset):
     #format of folder <user>_<sessid>_e<episode>_<world>-<level>_<outcome>
@@ -116,7 +117,7 @@ class MarioButtonsDataset(Dataset):
 
         self._load_episodes(worlds=worlds)
 
-    def _load_episodes(self,worlds):     
+    def _load_episodes(self,worlds): 
         for file in os.listdir(self.img_dir):
             if not os.path.isdir(os.path.join(self.img_dir,file)):
                 continue

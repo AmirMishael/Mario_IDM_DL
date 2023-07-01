@@ -65,7 +65,8 @@ class MarioHistoryDataset(Dataset):
 class MarioHistoryEpisode(MarioEpisode):
     def __init__(self, episode_dir, group_frames: int = 1, use_color=False, transform=None, preload=False):
         super().__init__(episode_dir, group_frames, use_color, transform, preload)
-    
+    def __len__(self):
+        return self.total_frames - self.group_frames
     def __getitem__(self, idx):
         item,action,world_level =  super().__getitem__(idx)
         action = self._extract_action(self.file_names[idx + self.group_frames])

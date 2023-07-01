@@ -1,7 +1,7 @@
 import pathlib
 from helper_code.mario_history_dataset import MarioHistoryButtonsDataset, MarioHistoryDataset
 from helper_code.resnet_model import AgentModel, ResnetModel
-from helper_code.mario_buttons_dataset import TEST_WORLDS, TRAIN_WORLDS, VAL_WORLDS, MarioButtonsDataset
+from helper_code.mario_buttons_dataset import TEST_WORLDS, TRAIN_TEST, TRAIN_WORLDS, VAL_WORLDS, MarioButtonsDataset
 import torch
 import torchvision
 import os
@@ -108,7 +108,7 @@ def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_c
     print(f"loading dataset preload:{preload}")
     # mario_dataset = MarioHistoryDataset(img_dir='./video/frames',history_frames=group,use_color=use_color,preload=preload,metadata_file='./video/metadata.csv' )
     # mario_dataset_train,mario_dataset_test,mario_dataset_val = torch.utils.data.random_split(mario_dataset,[0.89,0.01,0.1])
-    mario_dataset_train = MarioHistoryButtonsDataset(history_size=group,use_color=False,img_dir="./mario_dataset",preload=preload,worlds= [TEST_WORLDS] + [TRAIN_WORLDS])
+    mario_dataset_train = MarioHistoryButtonsDataset(history_size=group,use_color=False,img_dir="./mario_dataset",preload=preload,worlds=TRAIN_TEST)
     mario_dataset_val = MarioHistoryButtonsDataset(history_size=group,use_color=False,img_dir="./mario_dataset",preload=preload,worlds=VAL_WORLDS)
     print(f"tot train dataset frames :{len(mario_dataset_train)}")
 
