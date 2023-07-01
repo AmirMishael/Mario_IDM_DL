@@ -82,7 +82,7 @@ class MarioHistoryButtonsDataset(MarioButtonsDataset):
                 continue
             mario_episode = MarioHistoryEpisode(os.path.join(self.img_dir,file),self.group_frames,self.use_color,self.transform,preload=False)
             if int(mario_episode.world) in worlds:
-                mario_episode = MarioHistoryEpisode(os.path.join(self.img_dir,file),self.group_frames,self.use_color,self.transform,preload=preload)
+                mario_episode = MarioHistoryEpisode(os.path.join(self.img_dir,file),self.group_frames,self.use_color,self.transform,preload=False)
                 self.episodes.append(mario_episode)
                 self.total_length += len(mario_episode)
         print(f"total episodes:{len(self.episodes)}")
