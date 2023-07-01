@@ -7,6 +7,8 @@ from tqdm import tqdm
 import pathlib
 import pandas as pd
 
+from helper_code.mario_buttons_dataset import TEST_WORLDS, TRAIN_WORLDS, MarioButtonsDataset, MarioEpisode
+
 class MarioHistoryDataset(Dataset):
     def __init__(self,img_dir,metadata_file,history_frames:int = 7,use_color=False,preload = False):
         super().__init__()
@@ -60,3 +62,30 @@ class MarioHistoryDataset(Dataset):
         action_tensor = torch.round(torch.Tensor(metadata_img[['up','left','right','B']].values.tolist()))
         return action_tensor
         
+class MarioHistoryEpisode(MarioEpisode):
+    def __init__(self, episode_dir, group_frames: int = 1, use_color=False, transform=None, preload=False):
+        super().__init__(episode_dir, group_frames, use_color, transform, preload)
+    
+    def __getitem__(self, idx):
+        item,action,world_level =  super().__getitem__(idx)
+        action = self._extract_action(self.file_names[idx + self.group_frames])
+        return item,action,world_level
+class MarioHistoryButtonsDataset(MarioButtonsDataset):
+    def __init__(self, img_dir, history_size: int = 7, use_color=False, preload=False):
+        super().__init__(img_dir, group_frames=history_size, use_color=use_color, worlds=[TEST_WORLDS] + [TRAIN_WORLDS], preload=preload)
+    
+    def _load_episodes(self, worlds):
+        for file in os.listdir(self.img_dir):
+            if not os.path.isdir(os.path.join(self.img_dir,file)):
+                continue
+            if "win" not in file:
+                continue
+            mario_episode = MarioHistoryEpisode(os.path.join(self.img_dir,file),self.group_frames,self.use_color,self.transform,preload=False)
+            if int(mario_episode.world) in worlds:
+                mario_episode = MarioHistoryEpisode(os.path.join(self.img_dir,file),self.group_frames,self.use_color,self.transform,preload=preload)
+                self.episodes.append(mario_episode)
+                self.total_length += len(mario_episode)
+        print(f"total episodes:{len(self.episodes)}")
+
+    
+    

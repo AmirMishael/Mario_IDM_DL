@@ -1,5 +1,5 @@
 import pathlib
-from helper_code.mario_history_dataset import MarioHistoryDataset
+from helper_code.mario_history_dataset import MarioHistoryButtonsDataset, MarioHistoryDataset
 from helper_code.resnet_model import AgentModel, ResnetModel
 from helper_code.mario_buttons_dataset import TEST_WORLDS, TRAIN_WORLDS, VAL_WORLDS, MarioButtonsDataset
 import torch
@@ -31,7 +31,7 @@ def calculate_accuracy(model, dataloader, device):
     print(f"accuracy: {model_accuracy} , total_correct:{total_correct} , total_inputs:{total_inputs}")
     return model_accuracy 
 
-def train_loop(model,data_loaders,val_loader,device,group,epochs,learning_rate,use_color,save_path='./models'
+def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,use_color,save_path='./models'
                ,aug_list=[],start_epoch=0,pos_weight=None):
     print(f"started training with hyperparams: group:{group}, epochs:{epochs}, learning_rate:{learning_rate} ,use_color:{use_color} ,aug_list:{len(aug_list)},start_epoch:{start_epoch}")
     loss_history=[]
@@ -51,25 +51,24 @@ def train_loop(model,data_loaders,val_loader,device,group,epochs,learning_rate,u
     for epoch in range(start_epoch+1,epochs):
         model.train()
         running_loss = 0.0
-        for data_loader in data_loaders:
-            for i,data in enumerate(tqdm(data_loader,desc=f"training epoch:{epoch}")):
-                inputs,buttons,world_level = data
-                inputs = inputs.to(device)
-                buttons = buttons.to(device)
-                if aug_list:
-                    inputs = aug_list[torch.randint(0,len(aug_list),(1,))](inputs)
-                output = model(inputs)
-                loss = criterion(output,buttons)
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
+        for i,data in enumerate(tqdm(data_loader,desc=f"training epoch:{epoch}")):
+            inputs,buttons,world_level = data
+            inputs = inputs.to(device)
+            buttons = buttons.to(device)
+            if aug_list:
+                inputs = aug_list[torch.randint(0,len(aug_list),(1,))](inputs)
+            output = model(inputs)
+            loss = criterion(output,buttons)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
-                los_val = loss.data.item()
-                running_loss += los_val
+            los_val = loss.data.item()
+            running_loss += los_val
 
-                if i % 500 == 0:
-                    print(f"saving checkpoint at epoch:{epoch}, batch:{i}, loss:{los_val}")
-                    torch.save(model.state_dict(),f"{save_path}/checkpoints/checkpoint_{epoch}_{i}_group_{group}_color_{use_color}.pt")
+            if i % 500 == 0:
+                print(f"saving checkpoint at epoch:{epoch}, batch:{i}, loss:{los_val}")
+                torch.save(model.state_dict(),f"{save_path}/checkpoints/checkpoint_{epoch}_{i}_group_{group}_color_{use_color}.pt")
         
         loss_history.append(running_loss)
         running_loss /= len(data_loader)
@@ -107,21 +106,23 @@ def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_c
 
     
     print(f"loading dataset preload:{preload}")
-    mario_dataset = MarioHistoryDataset(img_dir='./video/frames',history_frames=group,use_color=use_color,preload=preload,metadata_file='./video/metadata.csv' )
-    mario_dataset_train,mario_dataset_test,mario_dataset_val = torch.utils.data.random_split(mario_dataset,[0.89,0.01,0.1])
+    # mario_dataset = MarioHistoryDataset(img_dir='./video/frames',history_frames=group,use_color=use_color,preload=preload,metadata_file='./video/metadata.csv' )
+    # mario_dataset_train,mario_dataset_test,mario_dataset_val = torch.utils.data.random_split(mario_dataset,[0.89,0.01,0.1])
+    mario_dataset_train = MarioHistoryButtonsDataset(history_size=group,use_color=False,img_dir="./mario_dataset",preload=preload)
+    mario_dataset_val = MarioHistoryButtonsDataset(history_size=group,use_color=False,img_dir="./mario_dataset",preload=preload,worlds=VAL_WORLDS)
     print(f"tot train dataset frames :{len(mario_dataset_train)}")
 
     train_loader = torch.utils.data.DataLoader(mario_dataset_train,batch_size=batch_size,shuffle=True,num_workers=4)
     #test_loader = torch.utils.data.DataLoader(mario_dataset_test,batch_size=batch_size,shuffle=True,num_workers=8)
     val_loader = torch.utils.data.DataLoader(mario_dataset_val,batch_size=batch_size,shuffle=True,num_workers=4)
     
-    additional_loaders = []
-    for file_name in os.listdir('./video/converted'):
-        if ".csv" in file_name:
-            name = file_name.split(".")[0].replace("metadata_","")
-            additional_dataset = MarioHistoryDataset(img_dir=f'./video/converted/{name}_frames',history_frames=group,use_color=use_color,preload=preload,metadata_file=f'./video/converted/metadata_{name}.csv' )
-            additional_loader = torch.utils.data.DataLoader(additional_dataset,batch_size=batch_size,shuffle=True,num_workers=4)
-            additional_loaders.append(additional_loader)
+    # additional_loaders = []
+    # for file_name in os.listdir('./video/converted'):
+    #     if ".csv" in file_name:
+    #         name = file_name.split(".")[0].replace("metadata_","")
+    #         additional_dataset = MarioHistoryDataset(img_dir=f'./video/converted/{name}_frames',history_frames=group,use_color=use_color,preload=preload,metadata_file=f'./video/converted/metadata_{name}.csv' )
+    #         additional_loader = torch.utils.data.DataLoader(additional_dataset,batch_size=batch_size,shuffle=True,num_workers=4)
+    #         additional_loaders.append(additional_loader)
     #additional_loaders.append(train_loader)
 
     model = AgentModel(history_size=group,use_color=use_color).to(device)    
@@ -129,8 +130,8 @@ def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_c
         model.load_state_dict(torch.load(f"{models_dir}/best_model_group_{group}_color_{use_color}.pt"))
     
     train_loop(model = model,
-          data_loaders = additional_loaders[:-1],
-          val_loader = additional_loaders[-1],
+          data_loader = train_loader,
+          val_loader = val_loader,
           device=device,
           group=group,
           epochs=epochs,
