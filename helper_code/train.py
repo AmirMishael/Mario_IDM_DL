@@ -88,7 +88,7 @@ def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_c
 
     batch_size = 128
     learning_rate = lr
-    epochs = 100
+    epochs = 10
     
     group = group
     use_color = use_color
@@ -139,7 +139,8 @@ def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_c
           use_color=use_color,
           save_path=models_dir,
           aug_list=aug_ls,
-          start_epoch=start_epoch,)
+          start_epoch=start_epoch,
+          pos_weight=torch.Tensor([5,10,1,1]).to(device))
     torch.save(model.state_dict(),f"{models_dir}/model_final_agent.pt")
     print("model saved")
 
