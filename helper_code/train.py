@@ -32,7 +32,7 @@ def calculate_accuracy(model, dataloader, device):
     return model_accuracy 
 
 def train_loop(model,data_loaders,val_loader,device,group,epochs,learning_rate,use_color,save_path='./models'
-               ,aug_list=[],start_epoch=0):
+               ,aug_list=[],start_epoch=0,pos_weight=None):
     print(f"started training with hyperparams: group:{group}, epochs:{epochs}, learning_rate:{learning_rate} ,use_color:{use_color} ,aug_list:{len(aug_list)},start_epoch:{start_epoch}")
     loss_history=[]
     max_val_accuracy = 0
@@ -40,7 +40,9 @@ def train_loop(model,data_loaders,val_loader,device,group,epochs,learning_rate,u
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
     #optimizer = torch.optim.Adam(model.resnet.fc.parameters(), lr=learning_rate)
-    criterion = torch.nn.BCEWithLogitsLoss(pos_weight=torch.Tensor([5,10,1,1]).to(device))
+    criterion = torch.nn.BCEWithLogitsLoss()
+    if pos_weight is not None:
+        criterion = torch.nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     
     # for _ in range(start_batch):
     #     next(data_loader)
@@ -114,20 +116,20 @@ def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_c
     val_loader = torch.utils.data.DataLoader(mario_dataset_val,batch_size=batch_size,shuffle=True,num_workers=4)
     
     additional_loaders = []
-    for file_name in os.path.listdir('./video/converted'):
+    for file_name in os.listdir('./video/converted'):
         if ".csv" in file_name:
             name = file_name.split(".")[0].replace("metadata_","")
             additional_dataset = MarioHistoryDataset(img_dir=f'./video/converted/{name}_frames',history_frames=group,use_color=use_color,preload=preload,metadata_file=f'./video/converted/metadata_{name}.csv' )
             additional_loader = torch.utils.data.DataLoader(additional_dataset,batch_size=batch_size,shuffle=True,num_workers=4)
             additional_loaders.append(additional_loader)
-    additional_loaders.append(train_loader)
+    #additional_loaders.append(train_loader)
 
 
     model = AgentModel(history_size=group,use_color=use_color).to(device)    
     
     train_loop(model = model,
-          data_loaders = additional_loaders,
-          val_loader = val_loader,
+          data_loaders = additional_loaders[:-1],
+          val_loader = additional_loaders[-1],
           device=device,
           group=group,
           epochs=epochs,

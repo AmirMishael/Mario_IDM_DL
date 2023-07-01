@@ -49,6 +49,10 @@ def action_mapper(action_tensor):
         "1-1-0-0" : 7,#['left', 'A'],
         "0-1-0-1" : 8,#['left', 'B'],
         "1-1-0-1": 9,#['left', 'A', 'B'],
+        "0-1-1-0": 6,#['left', 'right'],
+        "1-1-1-0": 7,#['left', 'right', 'A'],
+        "0-1-1-1": 8,#['left', 'right', 'B'],
+        "1-1-1-1": 9,#['left', 'right', 'A', 'B'],
         #['down'],
         #['up'],
     }
