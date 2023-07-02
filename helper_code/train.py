@@ -92,11 +92,13 @@ def create_loss_acc_graphs(loss_history,acc_history,save_path):
     plt.plot(loss_history, 'b-')
     plt.xlabel('epoch')
     plt.ylabel('loss')
+    plt.xlim(left=0)
     plt.savefig(f"{save_path}/loss_graph.png")
 
     plt.figure()
     plt.plot(acc_history, 'r-')
     plt.xlabel('epoch')
+    plt.xlim(left=0)
     plt.ylabel('accuracy')
     plt.savefig(f"{save_path}/acc_graph.png")
 
