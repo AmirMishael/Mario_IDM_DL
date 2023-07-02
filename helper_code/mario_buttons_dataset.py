@@ -106,6 +106,7 @@ class MarioButtonsDataset(Dataset):
         self.group_frames = group_frames
         self.use_color = use_color
         self.img_dir = img_dir
+
         self.episodes = []
         self.transform = torchvision.transforms.Compose([
             torchvision.transforms.Resize((256,256)),
@@ -115,15 +116,16 @@ class MarioButtonsDataset(Dataset):
         ])
         self.total_length = 0
 
+        self.preload = preload
         self._load_episodes(worlds=worlds)
 
     def _load_episodes(self,worlds): 
         for file in os.listdir(self.img_dir):
             if not os.path.isdir(os.path.join(self.img_dir,file)):
                 continue
-            mario_episode = MarioEpisode(os.path.join(self.img_dir,file),self.group_frames,self.use_color,self.transform,preload=False)
+            mario_episode = MarioEpisode(os.path.join(self.img_dir,file),self.group_frames,self.use_color,self.transform,preload=self.preload)
             if int(mario_episode.world) in worlds:
-                mario_episode = MarioEpisode(os.path.join(self.img_dir,file),self.group_frames,self.use_color,self.transform,preload=preload)
+                mario_episode = MarioEpisode(os.path.join(self.img_dir,file),self.group_frames,self.use_color,self.transform,preload=self.preload)
                 self.episodes.append(mario_episode)
                 self.total_length += len(mario_episode)
         print(f"total episodes:{len(self.episodes)}")
