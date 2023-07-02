@@ -104,6 +104,7 @@ def create_loss_acc_graphs(loss_history,acc_history,save_path):
     plt.xlim(left=0)
     plt.xticks(range(len(loss_history)+1))    
     plt.ylabel('accuracy')
+    plt.ylim(bottom=0.5,top=1)
     plt.savefig(f"{save_path}/acc_graph.png")
 
 
