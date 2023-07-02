@@ -86,6 +86,8 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,us
         create_loss_acc_graphs(loss_history,acc_history,save_path="./models/graphs")
 
 def create_loss_acc_graphs(loss_history,acc_history,save_path):
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
     plt.figure()
     plt.plot(loss_history, 'b-')
     plt.xlabel('epoch')
@@ -125,24 +127,16 @@ def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_c
 
     
     print(f"loading dataset preload:{preload}")
-    # mario_dataset = MarioHistoryDataset(img_dir='./video/frames',history_frames=group,use_color=use_color,preload=preload,metadata_file='./video/metadata.csv' )
-    # mario_dataset_train,mario_dataset_test,mario_dataset_val = torch.utils.data.random_split(mario_dataset,[0.89,0.01,0.1])
-    mario_dataset_train = MarioHistoryButtonsDataset(history_size=group,use_color=False,img_dir="./mario_dataset",preload=preload,worlds=TRAIN_TEST)
-    mario_dataset_val = MarioHistoryButtonsDataset(history_size=group,use_color=False,img_dir="./mario_dataset",preload=preload,worlds=VAL_WORLDS)
+    mario_dataset = MarioHistoryDataset(img_dir='./video/frames',history_frames=group,use_color=use_color,preload=preload,metadata_file='./video/metadata.csv' )
+    mario_dataset_train,mario_dataset_test,mario_dataset_val = torch.utils.data.random_split(mario_dataset,[0.89,0.01,0.1])
+    #mario_dataset_train = MarioHistoryButtonsDataset(history_size=group,use_color=False,img_dir="./mario_dataset",preload=preload,worlds=TRAIN_TEST)
+    #mario_dataset_val = MarioHistoryButtonsDataset(history_size=group,use_color=False,img_dir="./mario_dataset",preload=preload,worlds=VAL_WORLDS)
     print(f"tot train dataset frames :{len(mario_dataset_train)}")
 
     train_loader = torch.utils.data.DataLoader(mario_dataset_train,batch_size=batch_size,shuffle=True,num_workers=4)
     #test_loader = torch.utils.data.DataLoader(mario_dataset_test,batch_size=batch_size,shuffle=True,num_workers=8)
     val_loader = torch.utils.data.DataLoader(mario_dataset_val,batch_size=batch_size,shuffle=True,num_workers=4)
     
-    # additional_loaders = []
-    # for file_name in os.listdir('./video/converted'):
-    #     if ".csv" in file_name:
-    #         name = file_name.split(".")[0].replace("metadata_","")
-    #         additional_dataset = MarioHistoryDataset(img_dir=f'./video/converted/{name}_frames',history_frames=group,use_color=use_color,preload=preload,metadata_file=f'./video/converted/metadata_{name}.csv' )
-    #         additional_loader = torch.utils.data.DataLoader(additional_dataset,batch_size=batch_size,shuffle=True,num_workers=4)
-    #         additional_loaders.append(additional_loader)
-    #additional_loaders.append(train_loader)
 
     model = AgentModel(history_size=group,use_color=use_color).to(device)    
     if start_epoch > 0:
@@ -182,7 +176,7 @@ def main_train(models_dir = "./models",checkpoint_path=None,start_epoch=0,lr=1e-
                   K.RandomInvert(p=0.2),
                   K.RandomBoxBlur(kernel_size=(3,3),p=0.2),
                   K.RandomErasing(p=0.2,scale=(0.02,0.05)),
-                  K.RandromRotation(degrees=5,p=0.2)]
+                  K.RandomRotation(degrees=5,p=0.2)]
     else:
         aug_ls = []
 
