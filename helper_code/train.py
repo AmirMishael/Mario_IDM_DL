@@ -8,6 +8,7 @@ import os
 import kornia.augmentation as K
 from PIL import Image
 from tqdm import tqdm
+from matplotlib import pyplot as plt
 
 def calculate_accuracy(model, dataloader, device):
     print("calculating accuracy")
@@ -35,6 +36,7 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,us
                ,aug_list=[],start_epoch=0,pos_weight=None):
     print(f"started training with hyperparams: group:{group}, epochs:{epochs}, learning_rate:{learning_rate} ,use_color:{use_color} ,aug_list:{len(aug_list)},start_epoch:{start_epoch}")
     loss_history=[]
+    acc_history = []
     max_val_accuracy = 0
 
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -70,15 +72,32 @@ def train_loop(model,data_loader,val_loader,device,group,epochs,learning_rate,us
                 print(f"saving checkpoint at epoch:{epoch}, batch:{i}, loss:{los_val}")
                 torch.save(model.state_dict(),f"{save_path}/checkpoints/checkpoint_{epoch}_{i}_group_{group}_color_{use_color}.pt")
         
-        loss_history.append(running_loss)
         running_loss /= len(data_loader)
+        loss_history.append(running_loss)
 
         val_accuracy = calculate_accuracy(model,val_loader,device)
+        acc_history.append(val_accuracy)
         if val_accuracy > max_val_accuracy:
             max_val_accuracy = val_accuracy
             torch.save(model.state_dict(),f"{save_path}/best_model_group_{group}_color_{use_color}.pt")
         print(f"running loss : {running_loss} , epoch:{epoch} ,max_val_accuracy:{max_val_accuracy} ,val_accuracy:{val_accuracy}")
         scheduler.step()
+
+        create_loss_acc_graphs(loss_history,acc_history,save_path="./models/graphs")
+
+def create_loss_acc_graphs(loss_history,acc_history,save_path):
+    plt.figure()
+    plt.plot(loss_history, 'b-')
+    plt.xlabel('epoch')
+    plt.ylabel('loss')
+    plt.savefig(f"{save_path}/loss_graph.png")
+
+    plt.figure()
+    plt.plot(acc_history, 'r-')
+    plt.xlabel('epoch')
+    plt.ylabel('accuracy')
+    plt.savefig(f"{save_path}/acc_graph.png")
+
 
 def main_train_agent(models_dir = "./models",start_epoch=0,lr=1e-3,group=7,use_color=False,use_aug=False):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
