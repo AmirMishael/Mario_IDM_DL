@@ -71,66 +71,101 @@ download the dataset from [Mario Dataset](https://github.com/rafaelcp/smbdataset
 We have the following file which you can change the model's path and the parameters listed in the table above.
 
 ``` bash
-python: main_train.py
+python main_train.py
 ```
+
+the above method will also save checkpoints in checkpoint folders in model dir.
 
 
 ### Labeling New Video
 
-![alt text](https://github.com/taldatech/image2pencil-drawing/blob/master/images/dp_compare.JPG)
-### Based on the paper "Combining Sketch and Tone for Pencil Drawing Production" by Cewu Lu, Li Xu, Jiaya Jia
-#### International Symposium on Non-Photorealistic Animation and Rendering (NPAR 2012), June 2012
-Project site can be found here:
-http://www.cse.cuhk.edu.hk/leojia/projects/pencilsketch/pencil_drawing.htm
+After training the model it can be used to label a downloaded video.
 
-Paper PDF - http://www.cse.cuhk.edu.hk/leojia/projects/pencilsketch/npar12_pencil.pdf
-
-Draws inspiration from the Matlab implementation by "candtcat1992" - https://github.com/candycat1992/PencilDrawing
-
-In this notebook, we will explain and implement the algorithm described in the paper. This is what we are trying to achieve:
-![alt text](https://github.com/taldatech/image2pencil-drawing/blob/master/images/ExampleResult.JPG)
-
-We can divide the workflow into 2 main steps:
-1. Pencil stroke generation (captures the general strucure of the scene)
-2. Pencil tone drawing (captures shapes shadows and shading)
-
-Combining the results from these steps should yield the desired result. The workflow can be depicted as follows:
-![alt text](https://github.com/taldatech/image2pencil-drawing/blob/master/images/Workflow.JPG)
-
-* Both figures were taken from the original paper
-
-Another example:
-![alt text](https://github.com/taldatech/image2pencil-drawing/blob/master/images/jl_compare.JPG)
-
-# Usage
-```python
-from PencilDrawingBySketchAndTone import *
-import matplotlib.pyplot as plt
-ex_img = io.imread('./inputs/11--128.jpg')
-pencil_tex = './pencils/pencil1.jpg'
-ex_im_pen = gen_pencil_drawing(ex_img, kernel_size=8, stroke_width=0, num_of_directions=8, smooth_kernel="gauss",
-                       gradient_method=0, rgb=True, w_group=2, pencil_texture_path=pencil_tex,
-                       stroke_darkness= 2,tone_darkness=1.5)
-plt.rcParams['figure.figsize'] = [16,10]
-plt.imshow(ex_im_pen)
-plt.axis("off")
+in the file :
+``` bash
+dataset_extraction.py
 ```
-# Parameters
-* kernel_size = size of the line segement kernel (usually 1/30 of the height/width of the original image)
-* stroke_width = thickness of the strokes in the Stroke Map (0, 1, 2)
-* num_of_directions = stroke directions in the Stroke Map (used for the kernels)
-* smooth_kernel = how the image is smoothed (Gaussian Kernel - "gauss", Median Filter - "median")
-* gradient_method = how the gradients for the Stroke Map are calculated (0 - forward gradient, 1 - Sobel)
-* rgb = True if the original image has 3 channels, False if grayscale
-* w_group = 3 possible weight groups (0, 1, 2) for the histogram distribution, according to the paper (brighter to darker)
-* pencil_texture_path = path to the Pencil Texture Map to use (4 options in "./pencils", you can add your own)
-* stroke_darkness = 1 is the same, up is darker.
-* tone_darkness = as above
+you need to change the following configuration that are located in the start of the file(under params section):
+| Parameter             | description |
+|-----------------------|-------------|
+| video_path            | path for video |
+| frames_dir            | path to save extracted frames of video |
+| start_sec             | cut the first seconds |
+| end_sec               | cut the last seconds |
+| metadata_path         | where to save the created metdata csv  |
+| group_size            | used model group size |
+| model path            | trained classifier path |
 
-# Folders
-* inputs: test images from the publishers' website: http://www.cse.cuhk.edu.hk/leojia/projects/pencilsketch/pencil_drawing.htm
-* pencils: pencil textures for generating the Pencil Texture Map
 
+after setting the parameters run 
+```bash
+python dataset_extraction.py
+```
+
+## Agent
+the agent itself is the same as the classifier (as it also classify between what button to press), only instead of being non causal it can only use the past frames
+
+### Training
+
+The following parameters were used:
+
+| Parameter             | Value |
+|-----------------------|-------|
+| Batch size            | 128   |
+| Number of epochs      | 7     |
+| history_size          | 7     |
+| Initial learning rate | 1e-3  |
+| use_color             | False |
+| augmentations         | True  |
+
+* history_size: amount of frames used for a single classification causal and look only it passed frames.
+* augmentations: using invertion, gaussian blur, box blur, rotation and erasing from Kornia.
+
+### How to train agent
+We have the following file which you can change the model's path and the parameters listed in the table above.
+
+``` bash
+python main_train_agent.py
+```
+
+it will save checkpoints the same way as the calssifier.
+
+### Testing in openai gym
+
+first a fix needs to be made (bug in openai gym) , use the following link to apply the fix:
+[fix](https://stackoverflow.com/questions/74060371/gym-super-mario-bros-7-3-0-valueerror-not-enough-values-to-unpack-expected)
+
+after that simply run :
+```bash
+python main_gym_agent_play.py
+```
+
+* in order to render live uncomment the line : env.render()
+
+# Prerequisites
+Package                  | Version
+------------------------ | -------------
+byol-pytorch             | 0.6.0
+gym                      | 0.26.2
+gym-notices              | 0.0.8
+gym-super-mario-bros     | 7.3.0
+numpy                    | 1.24.3
+torch                    | 2.0.1
+torchaudio               | 2.0.2
+torchvision              | 0.15.2
+tqdm                     | 4.65.0
+ 
+* if using gym use the fix mention in agent running section
+
+## Files in the repository (helper_code)
+
+|File name         | Purpsoe |
+|----------------------|------|
+|`train.py`| define the train loop for both models|
+|`resnet_model.py`| define the model archtecture change for both models (has hyperparameters of resnet type, group size and color)|
+|`mario_history_dataset.py`| pytorch dataset object for the dataset extraction scripy output. also has implimantation for smb dataset for only history group|
+|`mario_buttons_dataset.py`| pytorch dataset object for smb dataset (for classifier)|
+|`eval_model.py`| code for evaluaing model performence|
 
 # Reference
 [1] Baker, Bowen, Ilge Akkaya, Peter Zhokhov, Joost Huizinga, Jie Tang, Adrien Ecoffet, Brandon Houghton, Raul Sampedro, and Jeff Clune. 2022. Video pretraining (vpt): learning to act by watching unlabeled online videos. arXiv: 2206.11795 [cs.LG].

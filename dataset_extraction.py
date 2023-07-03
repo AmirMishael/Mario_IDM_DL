@@ -12,6 +12,18 @@ from helper_code.mario_buttons_dataset import MarioEpisode
 from helper_code.resnet_model import ResnetModel
 from pathlib import Path
 
+## params
+video_path = './video/video.mp4'
+frames_dir = './video/frames'
+start_sec = 10
+stop_sec = 35*60
+metadata_path = './video/metadata.csv'
+group_size = 15
+
+model_path = './models/best_model_group_15_color_False.pt'
+
+## end params
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.manual_seed(17)
 transform = torchvision.transforms.Compose([
@@ -82,12 +94,11 @@ def convert_buttons_to_history(episode_path:str,history_size:int = 7 , metadata_
     metadata_df.to_csv(metadata_path,index=False) 
         
         
-#extract_frames('./video/video.mp4', './video/frames',start_sec=10,stop_sec=35*60)
-#group_size = 15
-#model = ResnetModel(group_size=group_size,use_color=False).to(device)
-#model.load_state_dict(torch.load('./models/best_model_group_15_color_False.pt'))
-#create_metadata(frames_dir='./video/frames',metadata_path='./video/metadata.csv',model=model,group_size=group_size)
-for file in os.listdir('./mario_dataset/'):
-    if "win" in file:
-        convert_buttons_to_history(episode_path=f'./mario_dataset/{file}',history_size=7,metadata_path=f'./video/converted/metadata_{file}.csv',frames_path=f'./video/converted/{file}_frames')
+extract_frames(video_path=video_path, frames_dir= frames_dir,start_sec=start_sec,stop_sec=stop_sec)
+model = ResnetModel(group_size=group_size,use_color=False).to(device)
+model.load_state_dict(torch.load(model_path))
+create_metadata(frames_dir=frames_dir,metadata_path=metadata_path,model=model,group_size=group_size)
+# for file in os.listdir('./mario_dataset/'):
+#     if "win" in file:
+#         convert_buttons_to_history(episode_path=f'./mario_dataset/{file}',history_size=7,metadata_path=f'./video/converted/metadata_{file}.csv',frames_path=f'./video/converted/{file}_frames')
 
