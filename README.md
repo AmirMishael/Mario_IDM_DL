@@ -1,28 +1,3 @@
-
-### Labeling New Video
-
-
-
-`dataset_extraction.py` use to label your own video with these 3 functions:
-
-`extract_frames(video_path, frames_dir,start_sec,stop_sec)`: takes your video and decomposes it to frames. 
-
-`create_metadata(frames_dir,metadata_path,model,group_size)`: labels the frames based on your model. saves a csv file with the frames titles and labels.
-csv head: Up, Left, Right, B, ID, Image_path
-
-## OpenAI Gym - Agent
-We put our model into the big players' gym, OpenAI gym, so we can see what gameplay it produces.
-
-`main_train_agent.py` use to train the agent based on our network in the OpenAI gym.
-
-`main_gym_agent_play.py` lets the agent play the game.
-
-
-
-##############################
-
-# Break
-
 # Super Mario Play
 In this project we take the abilities of Deep Neural Networks (DNN) and put it into use in the world of gaming. We classified key presses on a given pre-labeled dataset to learn the game.
 ![Samples](images/img_1.png)
@@ -97,10 +72,23 @@ you need to change the following configuration that are located in the start of 
 | model path            | trained classifier path |
 
 
-after setting the parameters run 
+after setting the parameters run:
 ```bash
 python dataset_extraction.py
 ```
+
+which will run the video frames extraction and create metadata csv accoring to them and the model.
+
+### dataset extarction function description
+
+the file itself contains 3 functions :
+*   `dataset_extraction.py` use to label your own video with these 3 functions:
+
+*   `extract_frames(video_path, frames_dir,start_sec,stop_sec)`: takes your video and decomposes it to frames. 
+
+*   `create_metadata(frames_dir,metadata_path,model,group_size)`: labels the frames based on your model. saves a csv file with the frames titles and labels.
+csv head: Up, Left, Right, B, ID, Image_path
+
 
 ## Agent
 the agent itself is the same as the classifier (as it also classify between what button to press), only instead of being non causal it can only use the past frames
