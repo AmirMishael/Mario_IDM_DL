@@ -158,4 +158,4 @@ tqdm                     | 4.65.0
 # Reference
 [1] Baker, Bowen, Ilge Akkaya, Peter Zhokhov, Joost Huizinga, Jie Tang, Adrien Ecoffet, Brandon Houghton, Raul Sampedro, and Jeff Clune. 2022. Video pretraining (vpt): learning to act by watching unlabeled online videos. arXiv: 2206.11795 [cs.LG].
 
-[2] Pinto, R.C. 2021. Super mario bros. gameplay dataset. https://github.com/raf aelcp/smbdataset.
+[2] Pinto, R.C. 2021. Super mario bros. gameplay dataset. https://github.com/rafaelcp/smbdataset.
