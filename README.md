@@ -33,7 +33,7 @@ We trained a classifier based on ResNet18 architecture with BCE loss .The follow
 
 
 * group_size: amount of frames used for a single classification, not causal.
-* augmentations: using invertion, gaussian blur, box blur, rotation and erasing from Kornia.
+* augmentations: using inversion, gaussian blur, box blur, rotation and erasing from Kornia.
 
 The training uses this set of buttons only: {Up, Left, Right, B}
 
